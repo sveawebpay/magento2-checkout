@@ -1,0 +1,47 @@
+//
+//  Checkout summary
+//  _____________________________________________
+.svea-checkout-cart-summary {
+  > .title {
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .block {
+    .fieldset.coupon {
+      .field {
+        &> .label {
+            display: none;
+        }
+      }
+    }
+  }
+
+  .radio, .radio+.label {
+    cursor: pointer;
+  }
+}
+
+.page-main {
+  .svea-checkout-cart-summary {
+    .block {
+      margin-bottom: 1rem;
+    }
+  }
+}
+
+#block-summary {
+  &[style] {
+    display: block !important;
+  }
+}
+
+//
+//  Breakpoint l+
+//  _____________________________________________
+@media screen and (max-width: @screen__lplus) {
+  .svea-checkout-cart-summary {
+    display: none;
+  }
+}

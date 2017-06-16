@@ -1,0 +1,27 @@
+{
+  "name": "sveaekonomi/magento2-checkout",
+  "type": "magento-module2",
+  "description": "Svea Ekonomi Checkout, A checkout-bundled payment solution from Svea Ekonomi",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Webbhuset",
+      "email": "info@webbhuset.com"
+    }
+  ],
+  "depends": {
+    "sveaekonomi/webpay": "~3.2.0"
+  },
+  "require": {
+    "sveaekonomi/webpay": "~3.2.0"
+  },
+  "version": "1.0.2",
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Webbhuset\\Sveacheckout\\": ""
+    }
+  }
+}

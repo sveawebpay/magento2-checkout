@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<page layout="2columns-right" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="Webbhuset\Sveacheckout\Block\Checkout"
+                   name="webbhuset_sveacheckout_Checkout"
+                   template="checkout.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

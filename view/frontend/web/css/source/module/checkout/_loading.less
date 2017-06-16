@@ -1,0 +1,24 @@
+.loading-wrapper {
+  display: none;
+
+  &.loading {
+    background: rgba(255,255,255,0.6);
+    content: attr(data-loading-text);
+    display: table;
+    font-size: 1.5rem;
+    position: fixed;
+    text-align: center;
+    font-weight: bold;
+    top: 0;
+    left: 0;
+    width:100%;
+    height: 100%;
+    z-index: 999;
+
+    .loading-text {
+      display: table-cell;
+      vertical-align: middle;
+      text-align: center;
+    }
+  }
+}

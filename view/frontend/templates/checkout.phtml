@@ -1,0 +1,38 @@
+<?php
+$postUrl      = $this->getUrl('sveacheckout/index/updateCart');
+$locales      = $block->getLocales();
+$country      = $locales['purchase_country'];
+$clearStorage = $block->getClearLocalStorage();
+?>
+<div class="svea-checkout">
+    <div class="loading-wrapper">
+        <div class="loading-text">
+            <?= __('Please wait...') ?>
+        </div>
+    </div>
+    <?= $block->getCheckoutHtml() ?>
+</div>
+<script>// <![CDATA[
+  require([
+    'sveacheckout'
+  ], function ($, script) {
+    if('true' == '<?= $clearStorage ?>') {
+      localStorage.clear();
+    }
+    sveacheckout = {
+      // ajax post path
+      postUrl: '<?= $postUrl ?>',
+      country: '<?= $country ?>',
+
+      // map block ids
+      blockIds: [
+        {name: 'snippet',       id: 'svea-checkout-container'},
+          /* {name: 'totalsBlock',   id: 'cart-totals'}, */
+        {name: 'shippingBlock', id: 'cart-shipping'},
+          /* {name: 'couponBlock',   id: 'cart-coupon'}, */
+        {name: 'cartBlock',     id: 'shopping-cart-table'},
+      ],
+    };
+  });
+// ]]>
+</script>

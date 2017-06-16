@@ -1,0 +1,14 @@
+<?php
+$termsCollection = $block->getAgreements();
+
+foreach ($termsCollection as $term) :
+?>
+    <h1><?= /* @noEscape */$term->getCheckboxText() ?></h1>
+    <div>
+        <?php if ($term->getIsHtml()): ?>
+            <?= /* @noEscape */$term->getContent() ?>
+        <?php else: ?>
+            <?= /* @noEscape */nl2br($term->getContent()) ?>
+        <?php endif; ?>
+    </div>
+<?php endforeach; ?>

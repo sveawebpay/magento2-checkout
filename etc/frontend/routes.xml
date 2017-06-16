@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd"
+>
+    <router id="standard">
+        <route id="sveacheckout" frontName="sveacheckout">
+            <module name="Webbhuset_Sveacheckout" />
+        </route>
+    </router>
+</config>

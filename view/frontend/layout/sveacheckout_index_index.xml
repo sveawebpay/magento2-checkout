@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<page layout="1column" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+
+    <update handle="checkout_cart_index" />
+
+    <body>
+        <referenceContainer name="page.messages">
+            <block
+                class="Magento\Checkout\Block\Cart\ValidationMessages"
+                name="checkout.cart.validationmessages"
+            />
+        </referenceContainer>
+        <move element="checkout.cart.form" destination="cart.summary" before="-"/>
+        <move element="checkout.cart.coupon" destination="cart.summary" before="checkout.cart.totals.container"/>
+
+        <referenceContainer name="cart.summary"
+            htmlTag="div"
+            htmlClass="svea-checkout-cart-summary" />
+
+        <referenceContainer name="checkout.cart.methods" remove="true" />
+
+        <!-- Override htmlclass so we dont get styling from cart-container -->
+        <referenceContainer
+            name="checkout.cart.container"
+            htmlTag="div"
+            htmlClass="svea-cart-container"
+        >
+            <block name="webbhuset_sveacheckout_Checkout"
+                   class="Webbhuset\Sveacheckout\Block\Checkout"
+                   template="checkout.phtml"
+                   after="cart.summary" />
+        </referenceContainer>
+        <block
+            class="Magento\Checkout\Block\Cart\Additional\Info"
+            name="additional.product.info"
+            template="cart/additional/info.phtml"
+        />
+    </body>
+</page>

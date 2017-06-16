@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <preference for="Webbhuset\Sveacheckout\Api\QueueRepositoryInterface"
+                type="Webbhuset\Sveacheckout\Model\QueueRepository"/>
+    <preference for="Webbhuset\Sveacheckout\Api\Data\QueueInterface"
+                type="Webbhuset\Sveacheckout\Model\Queue"/>
+    <preference for="Webbhuset\Sveacheckout\Api\Data\QueueSearchResultInterface"
+                type="Webbhuset\Sveacheckout\Model\QueueSearchResult"/>
+    <!-- Invoice  -->
+    <virtualType name="SveaCheckoutFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="const">Webbhuset\Sveacheckout\Model\Ui\ConfigProvider::CHECKOUT_CODE</argument>
+            <argument name="formBlockType" xsi:type="string">Webbhuset\Sveacheckout\Block\Form\Checkout</argument>
+            <argument name="infoBlockType" xsi:type="string">Webbhuset\Sveacheckout\Block\Info\Checkout</argument>
+            <argument name="valueHandlerPool" xsi:type="object">SveaInvoiceValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">SveacheckoutGatewayCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+        <virtualType name="SveaInvoiceValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+            <arguments>
+                <argument name="handlers" xsi:type="array">
+                    <item name="default" xsi:type="string">SveaInvoiceConfigValueHandler</item>
+                </argument>
+            </arguments>
+        </virtualType>
+
+        <virtualType name="SveaInvoiceConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+            <arguments>
+                <argument name="configInterface" xsi:type="object">SveaInvoicePaymentConfig</argument>
+            </arguments>
+        </virtualType>
+
+        <virtualType name="SveaInvoicePaymentConfig" type="Magento\Payment\Gateway\Config\Config">
+            <arguments>
+                <argument name="methodCode" xsi:type="const">Webbhuset\Sveacheckout\Model\Ui\ConfigProvider::CHECKOUT_CODE</argument>
+            </arguments>
+        </virtualType>
+
+        <virtualType name="SveacheckoutGatewayCommandPool" type="\Magento\Payment\Gateway\Command\CommandPool">
+            <arguments>
+                <argument name="commands" xsi:type="array">
+                    <item name="authorize" xsi:type="string">SveacheckoutCommand</item>
+                    <item name="capture" xsi:type="string">SveacheckoutCommand</item>
+                    <item name="void" xsi:type="string">SveacheckoutCommand</item>
+                </argument>
+            </arguments>
+        </virtualType>
+
+        <virtualType name="SveacheckoutCommand" type="Webbhuset\Sveacheckout\Gateway\Command\SveaCommand">
+
+        </virtualType>
+</config>
