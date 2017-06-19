@@ -76,7 +76,10 @@ class Push
     public function execute()
     {
         $resultPage = $this->_resultPageFactory->create();
-        $quoteId    = $this->context->getRequest()->getParam('quoteId');
+        $queueId    = $this->context->getRequest()->getParam('queueId');
+
+        $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
+        $quoteId        = $orderQueueItem->getQuoteId();
 
         if (!$quoteId) {
             $resultPage->setHttpResponseCode('503');
@@ -84,7 +87,6 @@ class Push
             return $resultPage;
         }
 
-        $orderQueueItem  = $this->queue->getByQuoteId($quoteId);
         $orderQueueState = $orderQueueItem->getState();
 
         if (!$orderQueueItem->getQueueId()) {

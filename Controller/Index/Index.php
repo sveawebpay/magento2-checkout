@@ -118,16 +118,33 @@ class Index
     {
         $requestParams = $this->context->getRequest()->getParams();
 
-        if (isset($requestParams['reactivate']) && isset($requestParams['quoteId'])) {
-            $quoteId =(int)$requestParams['quoteId'];
-            $quote = $this->_restoreQuote($quoteId);
+        if (isset($requestParams['reactivate']) && isset($requestParams['queueId'])) {
+            $queueId = (int) $requestParams['queueId'];
+            $quoteId = $this->getNewestQuoteId($queueId);
+            $quote   = $this->_restoreQuote($quoteId);
 
             return $quote;
         }
 
-        $oldQuote    = $this->checkoutSession->getQuote();
+        $oldQuote = $this->checkoutSession->getQuote();
 
         return $oldQuote;
+    }
+
+    /**
+     * Get newest quote id with same payment reference as queue item.
+     *
+     * @param $queueItemId
+     *
+     * @return string
+     */
+    protected function getNewestQuoteId($queueItemId)
+    {
+        $queue = $this->queueFactory
+            ->create()
+            ->getLatestQueueItemWithSameReference($queueItemId);
+
+        return $queue->getQuoteId();
     }
 
     /**
@@ -139,14 +156,9 @@ class Index
      */
     protected function _restoreQuote($quoteId)
     {
-        $quoteIdFilter  = $this->searchCriteriaBuilder
-            ->addFilter('quote_id', $quoteId)
-            ->create();
         $entityIdFilter = $this->searchCriteriaBuilder
             ->addFilter('entity_id', $quoteId)
             ->create();
-
-        $hasOrder    = $this->orderRepository->getList($quoteIdFilter)->getSize();
         $oldQuote    = $this->quoteRepository->getList($entityIdFilter)->getItems();
 
         if (!sizeof($oldQuote)) {
@@ -156,24 +168,6 @@ class Index
 
             $oldQuote = reset($oldQuote);
         }
-
-        if (
-            !$hasOrder
-            && $oldQuote->getIsActive()
-            && $oldQuote->hasItems()
-            && !$oldQuote->getHasError()
-            && $this->buildOrder->getOrder($oldQuote)
-        ) {
-            try {
-                $response = $this->buildOrder->getOrder($oldQuote);
-                if ($response) {
-                    return $oldQuote;
-                }
-            } catch (\Exception $e) {
-
-            }
-        }
-
         $quote = $this->quoteFactory->create();
         $quote->merge($oldQuote)
             ->setIsActive(1)

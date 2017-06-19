@@ -58,6 +58,9 @@ class Acknowledge
             ->setStatus($status)
             ->save();
 
+        $payment = $order->getPayment();
+        $oldInfo = $payment->getAdditionalInformation();
+
         $info = [
             'reservation'  => $responseObject->getData(),
             'sveacheckout' => [
@@ -66,7 +69,7 @@ class Acknowledge
             ],
         ];
 
-        $payment = $order->getPayment();
+        $info = array_merge($oldInfo, $info);
         $payment->setAdditionalInformation($info);
 
         $type = TransactionInterface::TYPE_AUTH;

@@ -7,6 +7,7 @@ use Magento\Framework\View\Result\PageFactory;
 use Magento\Checkout\Model\Session as checkoutSession;
 use Magento\Quote\Model\QuoteRepository;
 use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
+use Webbhuset\Sveacheckout\Model\Queue as queueModel;
 
 /**
  * Class Success.
@@ -23,6 +24,7 @@ class Success
     protected $context;
     protected $buildOrder;
     protected $quoteRepository;
+    protected $queue;
 
     /**
      * Success constructor.
@@ -38,7 +40,8 @@ class Success
         PageFactory     $resultPageFactory,
         checkoutSession $session,
         BuildOrder      $buildOrder,
-        QuoteRepository $quoteRepository
+        QuoteRepository $quoteRepository,
+        queueModel      $queueModel
     )
     {
         $this->resultPageFactory = $resultPageFactory;
@@ -46,6 +49,7 @@ class Success
         $this->buildOrder        = $buildOrder;
         $this->context           = $context;
         $this->quoteRepository   = $quoteRepository;
+        $this->queue             = $queueModel;
         parent::__construct($context);
     }
 
@@ -62,7 +66,9 @@ class Success
             ->getLayout()
             ->getBlock('webbhuset_sveacheckout_Checkout');
 
-        $quoteId = $this->context->getRequest()->getParam('quoteId');
+        $queueId        = $this->context->getRequest()->getParam('queueId');
+        $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
+        $quoteId        = $orderQueueItem->getQuoteId();
 
         try {
             $quote = $this->quoteRepository->get($quoteId);

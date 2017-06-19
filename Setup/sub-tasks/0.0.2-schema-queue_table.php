@@ -82,6 +82,17 @@ if (!$this->installer->tableExists($queueTableName)) {
             ],
             'State'
         )
+        ->addColumn(
+            'payment_reference',
+            Table::TYPE_TEXT,
+            30,
+            [
+                'unsigned' => true,
+                'nullable' => true,
+                'primary'  => false,
+                'comment'  => 'Payment reference',
+            ]
+        )
         ->addForeignKey(
             $this->getFkName('sveacheckout_queue', 'quote_id', 'quote', 'entity_id'),
             'quote_id',

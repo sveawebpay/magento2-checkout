@@ -116,9 +116,37 @@ class Queue
     }
 
     /**
-     * Update state if old state is lower or has error
+     * Get latest queue item with same payment reference.
+     *
+     * @param int $queueId
+     *
+     * @return \Magento\Framework\DataObject
+     */
+    public function getLatestQueueItemWithSameReference($queueId)
+    {
+        $queue = $this->getResourceCollection()
+            ->addFilter('queue_id', $queueId)
+            ->getFirstItem();
+
+        $paymentReference = $queue->getPaymentReference();
+
+        $newest = $this->getResourceCollection()
+            ->setOrder('queue_id', 'DESC')
+            ->addFilter('payment_reference', $paymentReference)
+            ->getFirstItem();
+
+        if (!$newest->getQueueId()) {
+            return $this;
+        }
+
+        return $newest;
+    }
+
+    /**
+     * Update state if old state is lower or has error.
      *
      * @param  int $newState
+     *
      * @return $this
      */
     public function updateState($newState)

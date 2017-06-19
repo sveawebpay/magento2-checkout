@@ -13,6 +13,7 @@ use Magento\Quote\Api\Data\EstimateAddressInterfaceFactory;
 use Magento\Quote\Api\ShippingMethodManagementInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Webbhuset\Sveacheckout\Model\Queue as queueModel;
+use Webbhuset\Sveacheckout\Model\QueueFactory as queueModelFactory;
 use Webbhuset\Sveacheckout\Api\QueueRepositoryInterface;
 
 /**
@@ -34,6 +35,7 @@ class BuildOrder
     protected $estimatedAddressFactory;
     protected $shippingMethodManager;
     protected $quoteRepository;
+    protected $queueFactory;
 
     /**
      * BuildOrder constructor.
@@ -59,7 +61,8 @@ class BuildOrder
         QueueRepositoryInterface $queueRepository,
         EstimateAddressInterfaceFactory $estimatedAddressFactory,
         ShippingMethodManagementInterface $shippingMethodManager,
-        CartRepositoryInterface $quoteRepository
+        CartRepositoryInterface $quoteRepository,
+        queueModelFactory $queueFactory
     )
     {
         $this->auth                    = $auth;
@@ -72,6 +75,7 @@ class BuildOrder
         $this->estimatedAddressFactory = $estimatedAddressFactory;
         $this->shippingMethodManager   = $shippingMethodManager;
         $this->quoteRepository         = $quoteRepository;
+        $this->queueFactory            = $queueFactory;
     }
 
     /**
@@ -97,6 +101,7 @@ class BuildOrder
         }
 
         try {
+            $queueItem = $this->createQueueItem($quote);
             $response = $this->getOrder($quote);
             if (!is_array($response)) {
                 $this->_initialSettings($sveaOrderBuilder)
@@ -113,8 +118,10 @@ class BuildOrder
                     return;
                 }
 
-                $quote->setData('payment_reference', $response['OrderId']);
-                $this->quoteRepository->save($quote);
+                $paymentReference = $response['OrderId'];
+                $quote->setData('payment_reference', $paymentReference);
+                $queueItem->setData('payment_reference', $paymentReference)
+                    ->save();
             }
         } catch (\Exception $e) {
             $this->checkoutSession->setSveaGotError($e->getMessage());
@@ -160,14 +167,6 @@ class BuildOrder
 
                     return;
                 }
-
-                $queueItem = $this->queueModel->getByQuoteId($quote->getId());
-                $queueItem
-                    ->setData([
-                        'quote_id' => $quote->getId(),
-                        'state'    => queueModel::SVEA_QUEUE_STATE_INIT,
-                    ]);
-                $this->queueModel->save($queueItem);
             }
         } catch (\Exception $e) {
 
@@ -177,6 +176,46 @@ class BuildOrder
         }
 
         return $response;
+    }
+
+    /**
+     * Create a new queue item.
+     *
+     * @param \Magento\Sales\Model\Quote $quote
+     *
+     * @return \Webbhuset\Sveacheckout\Model\Queue
+     */
+    protected function createQueueItem($quote)
+    {
+        $queueItem = $this->queueFactory->create();
+
+        $queueItem
+            ->setData([
+                'payment_reference' => $quote->getPaymentReference(),
+                'quote_id'          => $quote->getId(),
+                'state'             => queueModel::SVEA_QUEUE_STATE_INIT,
+            ]);
+        $queueItem->save();
+
+        return $queueItem;
+    }
+
+    /**
+     * Get queue item for quote.
+     *
+     * @param \Magento\Sales\Model\Quote $quote
+     *
+     * @return \Webbhuset\Sveacheckout\Model\Queue
+     */
+    protected function getQueueItem($quote)
+    {
+        $queueItem = $this->queueModel->getByQuoteId($quote->getId());
+
+        if (!$queueItem->getId()) {
+            $queueItem = $this->createQueueItem($quote);
+        }
+
+        return $queueItem;
     }
 
     /**
@@ -281,8 +320,9 @@ class BuildOrder
             ? 'test'
             : 'prod';
 
+        $queueItem = $this->getQueueItem($quote);
         $pushParams = [
-            'quoteId' => $quoteId,
+            'queueId' => $queueItem->getData('queue_id'),
             'mode'    => $mode,
         ];
 
@@ -566,7 +606,6 @@ class BuildOrder
             $estimatedAddress = $this->estimatedAddressFactory->create();
             $estimatedAddress->setCountryId($defaultCountry);
             $this->shippingMethodManager->estimateByAddress($quote->getId(), $estimatedAddress);
-            $this->quoteRepository->save($quote);
         }
 
         return $this;
