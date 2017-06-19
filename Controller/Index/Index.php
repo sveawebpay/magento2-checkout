@@ -10,6 +10,7 @@ use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Quote\Model\QuoteFactory;
+use Webbhuset\Sveacheckout\Model\QueueFactory;
 
 /**
  * Class Index
@@ -28,6 +29,7 @@ class Index
     protected $orderRepository;
     protected $quoteRepository;
     protected $searchCriteriaBuilder;
+    protected $queueFactory;
 
     /**
      * Index constructor.
@@ -49,7 +51,8 @@ class Index
         OrderRepositoryInterface $orderRepository,
         SearchCriteriaBuilder    $searchCriteriaBuilder,
         QuoteRepository          $quoteRepository,
-        QuoteFactory             $quoteFactory
+        QuoteFactory             $quoteFactory,
+        QueueFactory             $queueFactory
     )
     {
         $this->_resultPageFactory    = $resultPageFactory;
@@ -60,6 +63,7 @@ class Index
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->quoteRepository       = $quoteRepository;
         $this->quoteFactory          = $quoteFactory;
+        $this->queueFactory          = $queueFactory;
         parent::__construct($context);
     }
 
