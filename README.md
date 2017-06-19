@@ -12,7 +12,8 @@ Svea checkout for Magento2
 *Installation:*
 
 run `composer require sveaekonomi/magento2-checkout && composer install` to install files.
-
+Then run `bin/magento setup:db:upgrade && bin/magento setup:ci:compile && bin/magento cache:flush` from your base folder 
+to install database scripts and recompile the dependency injections and clear cache.
 
 Head to _administration -> Stores -> Configuration -> Payment methods -> Svea Ekonomi Checkout_
 
