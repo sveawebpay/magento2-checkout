@@ -11,7 +11,7 @@
         <job name="svea_checkout_cleanup_task"
              instance="Webbhuset\Sveacheckout\Cron\Cron"
              method="run">
-            <schedule>*/2 * * * *</schedule>
+            <schedule>5 2 * * *</schedule>
         </job>
     </group>
 </config>

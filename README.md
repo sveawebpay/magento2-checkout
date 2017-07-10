@@ -1,10 +1,7 @@
 Svea checkout for Magento2
-*Only order creation for now*
- You will need to log into your Svea management interface to change or activate payments.
 
- Administration methods coming soon. 
- 
-*Requirements (inherited from dependencies)*
+* Requirements (inherited from dependencies)*
+* Magento 2.1.4 or above
 * PHP 5.6 >=
 * php-soap
 * php-curl

@@ -114,6 +114,13 @@ class CreateOrder
         $billingAddress  = $data['BillingAddress'];
         $shippingAddress = $data['ShippingAddress'];
 
+        $customer = $data['Customer'];
+
+        if ($customer['IsCompany'] == true) {
+            $billingCompany  = $billingAddress['FullName'];
+            $shippingCompany = $shippingAddress['FullName'];
+        }
+
         $billingFirstname = ($billingAddress['FirstName'])
             ? $billingAddress['FirstName']
             : $billingAddress['FullName'];
@@ -172,6 +179,12 @@ class CreateOrder
             'payment_method' => 'checkmo',
         ];
 
+        if (isset($billingCompany)) {
+            $billingAddressData['company'] = $billingCompany;
+        }
+        if (isset($shippingCompany)) {
+            $shippingAddressData['company'] = $shippingCompany;
+        }
         $quote->getBillingAddress()->addData($billingAddressData)
             ->setPaymentMethod('checkmo');
         $quote->getShippingAddress()->addData($shippingAddressData)

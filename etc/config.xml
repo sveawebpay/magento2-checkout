@@ -13,9 +13,15 @@
                 <title>Svea Ekonomi Checkout</title>
                 <allowspecific>0</allowspecific>
                 <group>svea</group>
+                <can_edit>false</can_edit>
                 <can_authorize>true</can_authorize>
+                <can_void>true</can_void>
+                <can_cancel>true</can_cancel>
                 <can_capture>true</can_capture>
+                <can_capture_partial>true</can_capture_partial>
                 <can_refund>true</can_refund>
+                <can_refund_partial>true</can_refund_partial>
+                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
                 <can_use_checkout>true</can_use_checkout>
                 <can_use_internal>false</can_use_internal>
                 <debug_mode>false</debug_mode>

@@ -15,7 +15,7 @@
   "require": {
     "sveaekonomi/webpay": "~3.2.0"
   },
-  "version": "1.0.3",
+  "version": "1.0.4",
   "autoload": {
     "files": [
       "registration.php"

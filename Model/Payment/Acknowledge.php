@@ -73,7 +73,9 @@ class Acknowledge
         $payment->setAdditionalInformation($info);
 
         $type = TransactionInterface::TYPE_AUTH;
-        $this->transactionHelper->addTransaction($payment, $responseObject, $type);
+        $this->transactionHelper->addTransaction($payment, $responseObject, $type, false);
+
+        $payment->authorize(true, $order->getGrandTotal());
 
         $orderQueueItem->setState(queueModel::SVEA_QUEUE_STATE_OK)
             ->save();

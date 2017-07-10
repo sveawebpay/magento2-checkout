@@ -14,17 +14,20 @@ class Transaction
     /**
      * Create transaction.
      *
-     * @param $payment
-     * @param $responseObject
-     * @param $type
+     * @param      $payment
+     * @param      $responseObject
+     * @param      $type
+     * @param bool $status
+     *
      */
-    public function addTransaction($payment, $responseObject, $type)
+    public function addTransaction($payment, $responseObject, $type, $status = false)
     {
         $id            = $responseObject->getData('OrderId');
         $txnId         = "{$id}-{$type}";
         $parentTransId = $payment->getLastTransId();
 
         $payment->setTransactionId($txnId)
+            ->setIsTransactionClosed($status)
             ->setTransactionAdditionalInfo(
                 \Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS,
                 $this->flattenDataArray($responseObject->getData())
