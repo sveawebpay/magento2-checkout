@@ -88,11 +88,10 @@ class Index
             $response = $this->buildOrder->getOrder($quote, false);
         } else {
             $response = $this->buildOrder->createOrder($quote);
+            $this->quoteRepository->save($quote);
         }
         $error      = $this->checkoutSession->getSveaGotError($response);
 
-
-        $this->quoteRepository->save($quote);
 
         if (isset($error) && !empty($error)) {
             $this->messageManager->addErrorMessage(
