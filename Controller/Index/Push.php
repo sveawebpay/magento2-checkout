@@ -11,6 +11,7 @@ use Webbhuset\Sveacheckout\Model\Payment\CreateOrder;
 use Webbhuset\Sveacheckout\Model\Payment\Acknowledge;
 use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
 use Psr\Log\LoggerInterface as logger;
+use Magento\Sales\Api\OrderManagementInterface;
 
 /**
  * Class Push.
@@ -30,6 +31,7 @@ class Push
     protected $quoteRepository;
     protected $createOrder;
     protected $acknowledge;
+    protected $orderManagement;
 
     /**
      * Push constructor.
@@ -42,16 +44,18 @@ class Push
      * @param \Magento\Quote\Model\QuoteRepository              $quoteRepository
      * @param \Webbhuset\Sveacheckout\Model\Payment\CreateOrder $createOrder
      * @param \Webbhuset\Sveacheckout\Model\Payment\Acknowledge $acknowledge
+     * @param \Magento\Sales\Api\OrderManagementInterface       $OrderManagementInterface
      */
     public function __construct(
-        Context         $context,
-        PageFactory     $resultPageFactory,
-        logger          $logger,
-        BuildOrder      $svea,
-        queueModel      $queueModel,
-        QuoteRepository $quoteRepository,
-        CreateOrder     $createOrder,
-        Acknowledge     $acknowledge
+        Context                  $context,
+        PageFactory              $resultPageFactory,
+        logger                   $logger,
+        BuildOrder               $svea,
+        queueModel               $queueModel,
+        QuoteRepository          $quoteRepository,
+        CreateOrder              $createOrder,
+        Acknowledge              $acknowledge,
+        OrderManagementInterface $OrderManagementInterface
     )
     {
         $this->_resultPageFactory = $resultPageFactory;
@@ -62,6 +66,7 @@ class Push
         $this->quoteRepository    = $quoteRepository;
         $this->createOrder        = $createOrder;
         $this->acknowledge        = $acknowledge;
+        $this->orderManagement    = $OrderManagementInterface;
 
         parent::__construct($context);
     }
@@ -80,6 +85,7 @@ class Push
 
         $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
         $quoteId        = $orderQueueItem->getQuoteId();
+        $orderId        = $orderQueueItem->getOrderId();
 
         if (!$quoteId) {
             $resultPage->setHttpResponseCode('503');
@@ -90,11 +96,8 @@ class Push
         $orderQueueState = $orderQueueItem->getState();
 
         if (!$orderQueueItem->getQueueId()) {
-            return $this->reportAndReturn(404, "QueueItem {$quoteId} not found in queue.");
-        }
 
-        if ($orderQueueState == queueModel::SVEA_QUEUE_STATE_OK) {
-            return $this->reportAndReturn(208, "QueueItem {$quoteId} already handled.");
+            return $this->reportAndReturn(404, "QueueItem {$quoteId} not found in queue.");
         }
 
         try {
@@ -110,9 +113,21 @@ class Push
 
         switch (strtolower($responseObject->getData('Status'))) {
             case 'created':
+
                 return $this->reportAndReturn(402, "{$quoteId} : is only in created state.");
             case 'cancelled':
+                if (!$orderId) {
+
+                    return $this->reportAndReturn(410, "{$quoteId} : is cancelled in both ends.");
+                }
+                $this->orderManagement->cancel($orderId);
+
                 return $this->reportAndReturn(410, "{$quoteId} : is cancelled in Svea end.");
+        }
+
+        if ($orderQueueState == queueModel::SVEA_QUEUE_STATE_OK) {
+
+            return $this->reportAndReturn(208, "QueueItem {$quoteId} already handled.");
         }
 
         $orderQueueItem->setPushResponse($responseObject->toJson())
