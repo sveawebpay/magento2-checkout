@@ -8,6 +8,7 @@ use Magento\Sales\Model\OrderRepository;
 use Webbhuset\Sveacheckout\Helper\Transaction as transactionHelper;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface as scope;
+use Magento\Sales\Model\Service\OrderService as orderService;
 
 /**
  * Class Acknowledge
@@ -21,23 +22,27 @@ class Acknowledge
     protected $orderRepository;
     protected $scopeConfig;
     protected $transactionHelper;
+    protected $orderService;
 
     /**
      * Acknowledge constructor.
      *
-     * @param OrderRepository $orderRepository
+     * @param \Magento\Sales\Model\OrderRepository               $orderRepository
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param transactionHelper $transactionHelper
+     * @param \Webbhuset\Sveacheckout\Helper\Transaction         $transactionHelper
+     * @param \Magento\Sales\Model\Service\OrderService          $orderService
      */
     public function __construct(
         OrderRepository   $orderRepository,
         scope             $scopeConfig,
-        transactionHelper $transactionHelper
+        transactionHelper $transactionHelper,
+        orderService      $orderService
     )
     {
         $this->orderRepository   = $orderRepository;
         $this->scopeConfig       = $scopeConfig;
         $this->transactionHelper = $transactionHelper;
+        $this->orderService      = $orderService;
     }
 
     /**
@@ -51,6 +56,7 @@ class Acknowledge
     {
         $orderId = $orderQueueItem->getOrderId();
         $order   = $this->orderRepository->get($orderId);
+        $this->orderService->notify($orderId);
 
         $status = $this->getAcknowledgedOrderStatus();
 
