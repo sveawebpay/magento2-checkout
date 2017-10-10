@@ -85,13 +85,12 @@ class Index
         $payment->setMethod(\Webbhuset\Sveacheckout\Model\Ui\ConfigProvider::CHECKOUT_CODE);
 
         if ($quote->getPaymentReference()) {
-            $response = $this->buildOrder->getOrder($quote, false);
+            $response = $this->buildOrder->getOrder($quote);
         } else {
             $response = $this->buildOrder->createOrder($quote);
             $this->quoteRepository->save($quote);
         }
         $error      = $this->checkoutSession->getSveaGotError($response);
-
 
         if (isset($error) && !empty($error)) {
             $this->messageManager->addErrorMessage(

@@ -56,7 +56,11 @@ class Acknowledge
     {
         $orderId = $orderQueueItem->getOrderId();
         $order   = $this->orderRepository->get($orderId);
-        $this->orderService->notify($orderId);
+        try {
+            $this->orderService->notify($orderId);
+        } catch (\Exception $e) {
+            //Suppress unable to send mail exception.
+        }
 
         $status = $this->getAcknowledgedOrderStatus();
 

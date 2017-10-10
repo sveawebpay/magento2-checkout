@@ -106,8 +106,13 @@ class Push
 
             return $this->reportAndReturn(404, "Quote {$quoteId} not found");
         }
-
         $sveaOrder = $this->svea->getOrder($quote);
+
+        if (!$sveaOrder) {
+            return $this->reportAndReturn(
+                404,
+                "SveaOrder får q {$quoteId} not found, it probably failed validation");
+        }
 
         $responseObject = new DataObject($sveaOrder);
 
