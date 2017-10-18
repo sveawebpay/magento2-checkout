@@ -6,6 +6,7 @@ require([
   'Magento_Checkout/js/checkout-data',
 ], function ($, getTotals, quote, shippingEstimation, checkoutData) {
 
+
   var addressData = {'countryId': sveacheckout.country};
   checkoutData.setShippingAddressFromData(addressData);
 
@@ -88,7 +89,7 @@ require([
 
   // update checkout via ajax call
   function updateCheckout(postData, fullUpdate) {
-    if (typeof window.scoApi !== 'Undefined') {
+    if ('scoApi' in window) {
       window.scoApi.setCheckoutEnabled(false);
     }
     // submit form
@@ -107,7 +108,7 @@ require([
         }
 
         // Update checkout window
-        if (typeof window.scoApi !== 'Undefined') {
+        if ('scoApi' in window) {
           window.scoApi.setCheckoutEnabled(true);
         }
       },
