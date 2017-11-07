@@ -39,9 +39,9 @@ class CreateOrder
         transactionHelper $transactionHelper
     )
     {
-        $this->quoteManagement = $quoteManagement;
-        $this->orderRepository = $orderRepository;
-        $this->order = $order;
+        $this->quoteManagement   = $quoteManagement;
+        $this->orderRepository   = $orderRepository;
+        $this->order             = $order;
         $this->transactionHelper = $transactionHelper;
     }
 
@@ -111,71 +111,95 @@ class CreateOrder
         //ZeroWidthSpace
         $notNull = html_entity_decode('&#8203;');
 
+        $email           = $data['EmailAddress'];
+        $email           = ($email) ? $email : $notNull;
         $billingAddress  = $data['BillingAddress'];
         $shippingAddress = $data['ShippingAddress'];
+        $customer        = $data['Customer'];
 
-        $customer = $data['Customer'];
-
-        if ($customer['IsCompany'] == true) {
-            $billingCompany  = $billingAddress['FullName'];
-            $shippingCompany = $shippingAddress['FullName'];
-        }
+        $reference = ($data['CustomerReference'])
+                   ? $data['CustomerReference']
+                   : false;
 
         $billingFirstname = ($billingAddress['FirstName'])
-            ? $billingAddress['FirstName']
-            : $billingAddress['FullName'];
+                          ? $billingAddress['FirstName']
+                          : $billingAddress['FullName'];
 
         $billingFirstname = ($billingFirstname)
-            ? $billingFirstname
-            : $notNull;
+                          ? $billingFirstname
+                          : $notNull;
+
+        if ($customer['IsCompany'] == true) {
+            $billingCompany   = $billingAddress['FullName'];
+            $shippingCompany  = $shippingAddress['FullName'];
+            $billingFirstname = ($reference)
+                              ? $reference
+                              : $notNull;
+        }
 
         $billingLastname = ($billingAddress['LastName'])
-            ? $billingAddress['LastName']
-            : $notNull;
+                         ? $billingAddress['LastName']
+                         : $notNull;
+
+        $street = implode(
+            "\n",
+            [
+                $billingAddress['StreetAddress'],
+                $billingAddress['CoAddress'],
+            ]
+        );
+
+        $street  = ($street) ? $street : $notNull;
+        $city    = $billingAddress['City'];
+        $city    = $city ? $city : $notNull;
+        $zip     = $billingAddress['PostalCode'];
+        $zip     = $zip ? $zip : $notNull;
+        $phone   = $data['PhoneNumber'];
+        $phone   = ($phone) ? $phone : $notNull;
+        $country = strtoupper($billingAddress['CountryCode']);
+        $country = ($country) ? $country : $notNull;
 
         $billingAddressData = [
-            'firstname'  => $billingFirstname,
-            'lastname'   => $billingLastname,
-            'street'     => implode(
-                "\n",
-                [
-                    $billingAddress['StreetAddress'],
-                    $billingAddress['CoAddress'],
-                ]
-            ),
-            'city'       => $billingAddress['City'],
-            'postcode'   => $billingAddress['PostalCode'],
-            'telephone'  => $data['PhoneNumber'],
-            'country_id' => strtoupper($billingAddress['CountryCode']), 'payment_method' => 'checkmo',
+            'firstname'      => $billingFirstname,
+            'lastname'       => $billingLastname,
+            'street'         => $street,
+            'city'           => $city,
+            'postcode'       => $zip,
+            'telephone'      => $phone,
+            'country_id'     => strtoupper($country),
+            'payment_method' => 'checkmo',
         ];
 
         $shippingFirstname = ($shippingAddress['FirstName'])
-            ? $shippingAddress['FirstName']
-            : $shippingAddress['FullName'];
+                           ? $shippingAddress['FirstName']
+                           : $shippingAddress['FullName'];
 
         $shippingFirstname = ($shippingFirstname)
-            ? $shippingFirstname
-            : $notNull;
+                           ? $shippingFirstname
+                           : $notNull;
 
-        $shippingLastname = $shippingAddress['LastName']
-            ? $shippingAddress['LastName']
-            : $notNull;
+        $shippingLastname  = $shippingAddress['LastName']
+                           ? $shippingAddress['LastName']
+                           : $notNull;
+
+        $street  = ($street) ? $street : $notNull;
+        $city    = $shippingAddress['City'];
+        $city    = $city ? $city : $notNull;
+        $zip     = $shippingAddress['PostalCode'];
+        $zip     = $zip ? $zip : $notNull;
+        $phone   = $data['PhoneNumber'];
+        $phone   = ($phone) ? $phone : $notNull;
+        $country = strtoupper($shippingAddress['CountryCode']);
+        $country = ($country) ? $country : $notNull;
 
         $shippingAddressData = [
-            'firstname' => $shippingFirstname,
-            'lastname'  => $shippingLastname,
-
-            'street'         => implode(
-                "\n",
-                [
-                    $shippingAddress['StreetAddress'],
-                    $shippingAddress['CoAddress'],
-                ]
-            ),
-            'city'           => $shippingAddress['City'],
-            'postcode'       => $shippingAddress['PostalCode'],
-            'country_id'     => strtoupper($shippingAddress['CountryCode']),
-            'telephone'      => $data['PhoneNumber'],
+            'firstname'      => $shippingFirstname,
+            'lastname'       => $shippingLastname,
+            'street'         => $street,
+            'city'           => $city,
+            'postcode'       => $zip,
+            'country_id'     => $country,
+            'telephone'      => $phone,
             'payment_method' => 'checkmo',
         ];
 
@@ -185,15 +209,16 @@ class CreateOrder
         if (isset($shippingCompany)) {
             $shippingAddressData['company'] = $shippingCompany;
         }
+
         $quote->getBillingAddress()->addData($billingAddressData)
             ->setPaymentMethod('checkmo');
         $quote->getShippingAddress()->addData($shippingAddressData)
             ->setPaymentMethod('checkmo')
             ->setCollectShippingRates(true);
 
-        $quote->setCustomerEmail($data['EmailAddress'])
-            ->setCustomerFirstname($shippingAddress['FirstName'])
-            ->setCustomerLastname($shippingAddress['LastName']);
+        $quote->setCustomerEmail($email)
+            ->setCustomerFirstname($shippingFirstname)
+            ->setCustomerLastname($shippingLastname);
 
         return $quote;
     }
