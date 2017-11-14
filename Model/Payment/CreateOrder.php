@@ -10,6 +10,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\OrderRepository;
 use Webbhuset\Sveacheckout\Model\Queue as queueModel;
 use Webbhuset\Sveacheckout\Helper\Transaction as transactionHelper;
+use Psr\Log\LoggerInterface as logger;
 
 /**
  * Class CreateOrder
@@ -23,6 +24,7 @@ class CreateOrder
     protected $quoteManagement;
     protected $orderRepository;
     protected $transactionHelper;
+    protected $logger;
 
     /**
      * CreateOrder constructor.
@@ -36,13 +38,15 @@ class CreateOrder
         QuoteManagement   $quoteManagement,
         OrderRepository   $orderRepository,
         Order             $order,
-        transactionHelper $transactionHelper
+        transactionHelper $transactionHelper,
+        logger            $logger
     )
     {
         $this->quoteManagement   = $quoteManagement;
         $this->orderRepository   = $orderRepository;
         $this->order             = $order;
         $this->transactionHelper = $transactionHelper;
+        $this->logger            = $logger;
     }
 
     /**
@@ -88,7 +92,7 @@ class CreateOrder
             $connection->commit();
         } catch (\Exception $e) {
             $connection->rollback();
-
+            $this->logger->error($e->getMessage());
             $orderQueueItem->setState(queueModel::SVEA_QUEUE_STATE_ERR)
                 ->save();
 

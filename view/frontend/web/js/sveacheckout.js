@@ -135,4 +135,15 @@ require([
       }
     });
   }
+
+
+  /**
+   * Observe the validationresult, check for last error message, if found display it.
+   */
+  // Update checkout window
+  if ('scoApi' in window) {
+    window.scoApi.observeModel('validation.result', function() {
+      window.scoApi.setCheckoutEnabled(true);
+    });
+  }
 });

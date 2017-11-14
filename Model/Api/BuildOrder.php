@@ -338,6 +338,7 @@ class BuildOrder
         $hashedBaseUrl = sha1($this->helper->getBaseUrl());
         $clientId      = substr($hashedBaseUrl, 0, $lengthOfHash) . $separator . $quoteId;
         $pushUri       = $this->helper->getUrl('sveacheckout/Index/push', $pushParams);
+        $validationUri = $this->helper->getUrl('sveacheckout/Index/Validation', $pushParams);
 
         $overrideCallbackUri = $this->helper->getStoreConfig(
             'payment/webbhuset_sveacheckout/developers/callback_uri_override'
@@ -346,13 +347,15 @@ class BuildOrder
             $overrideBase = $this->helper->getStoreConfig(
                 'payment/webbhuset_sveacheckout/developers/callback_uri'
             );
-            $pushUri      = str_replace($this->helper->getBaseUrl(), $overrideBase, $pushUri);
+            $pushUri       = str_replace($this->helper->getBaseUrl(), $overrideBase, $pushUri);
+            $validationUri = str_replace($this->helper->getBaseUrl(), $overrideBase, $validationUri);
         }
 
         $restoreParams = array_merge($pushParams, ['reactivate' => 'true']);
 
         $buildOrder->setClientOrderNumber($clientId)
                    ->setCheckoutUri($this->helper->getUrl('sveacheckout/Index/index', $restoreParams))
+                   ->setValidationCallbackUri($validationUri)
                    ->setConfirmationUri($this->helper->getUrl('sveacheckout/Index/success', $pushParams))
                    ->setPushUri($pushUri)
                    ->setTermsUri($this->helper->getUrl('sveacheckout/Index/terms', []));

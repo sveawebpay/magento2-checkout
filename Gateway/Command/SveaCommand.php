@@ -248,10 +248,14 @@ class SveaCommand implements
     {
         if ($order->getPayment()) {
             $transactionDetails = $order->getPayment()->getAdditionalInformation();
-            if (!isset($transactionDetails['Locale'])) {
+            if (!isset($transactionDetails['Locale']) && !isset($transactionDetails['reservation']['Locale'])) {
                 throw new \Exception('Order transaction missing, is it acknowledged?');
             }
-            $locale = ['purchase_country' => $transactionDetails['Locale']];
+            $locales = (isset($transactionDetails['Locale']))
+                ? $transactionDetails['Locale']
+                : $transactionDetails['reservation']['Locale'];
+
+            $locale = ['purchase_country' => $locales];
         }
 
         if (!isset($locale)) {
