@@ -186,6 +186,14 @@ class CreateOrder
                            ? $shippingAddress['LastName']
                            : $notNull;
 
+        $street = implode(
+            "\n",
+            [
+                $shippingAddress['StreetAddress'],
+                $shippingAddress['CoAddress'],
+            ]
+        );
+
         $street  = ($street) ? $street : $notNull;
         $city    = $shippingAddress['City'];
         $city    = $city ? $city : $notNull;
