@@ -178,11 +178,38 @@ class Index
             ->setPaymentReference($oldQuote->getPaymentReference())
             ->setShippingAddress($oldQuote->getShippingAddress())
             ->collectTotals();
+
+        $orderExists = count($this->getOrderCollection($oldQuote));
+
+        if (
+            $orderExists ||
+            !$oldQuote->getIsActive() ||
+            $oldQuote->getHasError() ||
+            !$oldQuote->hasItems()
+        ) {
+            $quote->setPaymentReference(null);
+        }
+
         $this->quoteRepository->save($quote);
         $this->checkoutSession->replaceQuote($quote)
             ->unsLastRealOrderId();
 
         $this->_redirect('sveacheckout/index/index');
         return $quote;
+    }
+
+    protected function getOrderCollection($quote) {
+        $orderId    = $quote->getReservedOrderId();
+        $repository = $this->orderRepository;
+
+        $incrementIdFilter = $this->searchCriteriaBuilder
+            ->addFilter('increment_id', $orderId)
+            ->create();
+
+        $orderCollection = $repository
+            ->getList($incrementIdFilter)
+            ->getItems();
+
+        return $orderCollection;
     }
 }

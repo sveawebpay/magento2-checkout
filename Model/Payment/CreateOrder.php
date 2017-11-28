@@ -174,10 +174,13 @@ class CreateOrder
             'payment_method' => 'checkmo',
         ];
 
-        $shippingFirstname = ($shippingAddress['FirstName'])
-                           ? $shippingAddress['FirstName']
-                           : $shippingAddress['FullName'];
-
+        if (true == $customer->getData('IsCompany') && $reference) {
+            $shippingFirstname = $reference;
+        } else {
+            $shippingFirstname = ($shippingAddress['FirstName'])
+                ? $shippingAddress['FirstName']
+                : $shippingAddress['FullName'];
+        }
         $shippingFirstname = ($shippingFirstname)
                            ? $shippingFirstname
                            : $notNull;
