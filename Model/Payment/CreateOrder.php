@@ -174,7 +174,7 @@ class CreateOrder
             'payment_method' => 'checkmo',
         ];
 
-        if (true == $customer->getData('IsCompany') && $reference) {
+        if (true == $customer['IsCompany'] && $reference) {
             $shippingFirstname = $reference;
         } else {
             $shippingFirstname = ($shippingAddress['FirstName'])
