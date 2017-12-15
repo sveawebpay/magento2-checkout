@@ -12,7 +12,6 @@ use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Webbhuset\Sveacheckout\Api\Data\QueueSearchResultInterfaceFactory;
 use Webbhuset\Sveacheckout\Model\ResourceModel\Queue\Collection as CollectionFactory;
-use Webbhuset\Sveacheckout\Model\ResourceModel\Queue\Collection;
 use Webbhuset\Sveacheckout\Model\ResourceModel\Queue as QueueResource;
 
 /**

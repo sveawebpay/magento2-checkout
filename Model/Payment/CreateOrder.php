@@ -121,8 +121,8 @@ class CreateOrder
         $shippingAddress = $data['ShippingAddress'];
         $customer        = $data['Customer'];
 
-        $reference = ($data['CustomerReference'])
-                   ? $data['CustomerReference']
+        $reference = ($customer['CustomerReference'])
+                   ? $customer['CustomerReference']
                    : false;
 
         $billingFirstname = ($billingAddress['FirstName'])

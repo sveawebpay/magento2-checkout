@@ -149,9 +149,8 @@ class SveaCommand implements
 
         if (!in_array('CanDeliverOrder', $sveaOrder['Actions'])) {
             if ('Delivered' == $sveaOrder['OrderStatus']) {
-                throw new \Exception(
-                    'Svea responded: order already delivered. Handle it using Svea\'s admin interface'
-                );
+			
+                return json_decode(json_encode($sveaOrder), false);
             }
 
             throw new \Exception(
