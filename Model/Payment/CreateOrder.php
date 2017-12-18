@@ -121,7 +121,7 @@ class CreateOrder
         $shippingAddress = $data['ShippingAddress'];
         $customer        = $data['Customer'];
 
-        $reference = ($customer['CustomerReference'])
+        $reference = (isset($customer['CustomerReference']) && !empty($customer['CustomerReference']))
                    ? $customer['CustomerReference']
                    : false;
 
