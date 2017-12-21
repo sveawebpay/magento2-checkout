@@ -124,6 +124,9 @@ class CreateOrder
         $reference = (isset($customer['CustomerReference']) && !empty($customer['CustomerReference']))
                    ? $customer['CustomerReference']
                    : false;
+        $reference = (!$reference && isset($data['CustomerReference']) && !empty($data['CustomerReference']))
+                   ? $data['CustomerReference']
+                   : false;
 
         $billingFirstname = ($billingAddress['FirstName'])
                           ? $billingAddress['FirstName']
