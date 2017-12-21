@@ -148,7 +148,7 @@ class Validation
         ) {
             $orderId = $this->createOrder->createOrder($quote, $orderQueueItem, $sveaOrder, $responseObject);
             if (!$orderId) {
-                return $this->reportAndReturn(226, $this->getResponse()->getHttpResponseCode());
+                return $this->reportAndReturn(203, $this->getResponse()->getHttpResponseCode());
             }
         }
 
