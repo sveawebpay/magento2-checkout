@@ -11,6 +11,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Quote\Model\QuoteFactory;
 use Webbhuset\Sveacheckout\Model\QueueFactory;
+use Webbhuset\Sveacheckout\Helper\Data as helper;
 
 /**
  * Class Index
@@ -30,6 +31,7 @@ class Index
     protected $quoteRepository;
     protected $searchCriteriaBuilder;
     protected $queueFactory;
+    protected $helper;
 
     /**
      * Index constructor.
@@ -52,7 +54,8 @@ class Index
         SearchCriteriaBuilder    $searchCriteriaBuilder,
         QuoteRepository          $quoteRepository,
         QuoteFactory             $quoteFactory,
-        QueueFactory             $queueFactory
+        QueueFactory             $queueFactory,
+        helper                   $helper
     )
     {
         $this->_resultPageFactory    = $resultPageFactory;
@@ -64,6 +67,8 @@ class Index
         $this->quoteRepository       = $quoteRepository;
         $this->quoteFactory          = $quoteFactory;
         $this->queueFactory          = $queueFactory;
+        $this->helper          = $helper;
+
         parent::__construct($context);
     }
 
@@ -77,6 +82,12 @@ class Index
     public function execute()
     {
         $resultPage = $this->_resultPageFactory->create();
+        $active = $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/active');
+        if (!$active) {
+
+            return $resultPage;
+        }
+
         $block      = $resultPage
             ->getLayout()
             ->getBlock('webbhuset_sveacheckout_Checkout');
