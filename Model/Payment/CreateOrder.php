@@ -116,7 +116,7 @@ class CreateOrder
         $notNull = html_entity_decode('&#8203;');
 
         $email           = $data['EmailAddress'];
-        $email           = ($email) ? $email : $notNull;
+        $email           = ($email) ? $email : 'missing-email@example.com';
         $billingAddress  = $data['BillingAddress'];
         $shippingAddress = $data['ShippingAddress'];
         $customer        = $data['Customer'];

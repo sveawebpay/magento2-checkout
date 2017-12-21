@@ -56,6 +56,17 @@ class Acknowledge
     {
         $orderId = $orderQueueItem->getOrderId();
         $order   = $this->orderRepository->get($orderId);
+
+        //Sometimes email is missing on order transaction
+        $sveaData = $responseObject->getData();
+        if (
+            empty(trim($order->getCustomerEmail())) || 'missing-email@example.com' == $order->getCustomerEmail()
+            && !empty($sveaData['EmailAddress'])
+        ) {
+            $order->setCustomerEmail($sveaData['EmailAddress']);
+        }
+
+
         try {
             $this->orderService->notify($orderId);
         } catch (\Exception $e) {
