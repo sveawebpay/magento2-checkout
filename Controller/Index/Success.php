@@ -8,6 +8,7 @@ use Magento\Checkout\Model\Session as checkoutSession;
 use Magento\Quote\Model\QuoteRepository;
 use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
 use Webbhuset\Sveacheckout\Model\Queue as queueModel;
+use Magento\Sales\Model\ResourceModel\Order\Collection  as  orderCollection;
 
 /**
  * Class Success.
@@ -24,6 +25,7 @@ class Success
     protected $context;
     protected $buildOrder;
     protected $quoteRepository;
+    protected $orderCollection;
     protected $queue;
 
     /**
@@ -41,7 +43,8 @@ class Success
         checkoutSession $session,
         BuildOrder      $buildOrder,
         QuoteRepository $quoteRepository,
-        queueModel      $queueModel
+        queueModel      $queueModel,
+        orderCollection $orderCollection
     )
     {
         $this->resultPageFactory = $resultPageFactory;
@@ -50,6 +53,7 @@ class Success
         $this->context           = $context;
         $this->quoteRepository   = $quoteRepository;
         $this->queue             = $queueModel;
+        $this->orderCollection   = $orderCollection;
         parent::__construct($context);
     }
 
@@ -76,6 +80,15 @@ class Success
 
             return $resultPage;
         }
+
+        $orderIds = $this->orderCollection
+            ->addAttributeToFilter('increment_id', ['eq', $quote->getReservedOrderId()])
+            ->getAllIds();
+
+        $this->_eventManager->dispatch(
+            'checkout_onepage_controller_success_action',
+            ['order_ids' => $orderIds]
+        );
 
         $response = $this->buildOrder->getOrder($quote, false);
         if ($block) {
