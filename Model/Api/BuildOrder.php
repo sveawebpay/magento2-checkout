@@ -336,7 +336,7 @@ class BuildOrder
         $separator     = '_';
         $lengthOfHash  = $allowedLength - (strlen((string)$quoteId) + strlen($separator));
         $hashedBaseUrl = sha1($this->helper->getBaseUrl());
-        $clientId      = substr($hashedBaseUrl, 0, $lengthOfHash) . $separator . $quoteId;
+        $clientId      = $quoteId . $separator . substr($hashedBaseUrl, 0, $lengthOfHash);
         $pushUri       = $this->helper->getUrl('sveacheckout/Index/push', $pushParams);
         $validationUri = $this->helper->getUrl('sveacheckout/Index/Validation', $pushParams);
 

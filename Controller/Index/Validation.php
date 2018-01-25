@@ -216,7 +216,7 @@ class Validation
         $separator     = '_';
         $lengthOfHash  = $allowedLength - (strlen((string)$incrementId) + strlen($separator));
         $hashedBaseUrl = sha1($this->context->getUrl()->getBaseUrl());
-        $sveaOrderId   = substr($hashedBaseUrl, 0, $lengthOfHash) . $separator . $incrementId;
+        $sveaOrderId   = $incrementId . $separator . substr($hashedBaseUrl, 0, $lengthOfHash);
 
         return $sveaOrderId;
     }
