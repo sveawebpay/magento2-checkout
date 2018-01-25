@@ -290,13 +290,13 @@ class BuildOrder
                 ->setVatPercent((int)round($item->getTaxPercent()))
                 ->setQuantity((float)round($qty, 2))
                 ->setArticleNumber($prefix . $item->getSku())
-                ->setName((string)substr($item->getName(), 0, 40))
+                ->setName(mb_substr($item->getName(), 0, 40))
                 ->setTemporaryReference((string)$item->getId());
             $buildOrder->addOrderRow($orderRowItem);
 
             if ((float)$item->getDiscountAmount()) {
                 $itemRowDiscount = WebPayItem::fixedDiscount()
-                    ->setName(substr(sprintf('discount-%s', $prefix . $item->getId()), 0, 40))
+                    ->setName(mb_substr(sprintf('discount-%s', $prefix . $item->getId()), 0, 40))
                     ->setVatPercent((int)round($item->getTaxPercent()))
                     ->setAmountIncVat((float)$item->getDiscountAmount());
 
@@ -571,7 +571,7 @@ class BuildOrder
         //Add shipping to SveaOrder.
         $vatPercent    = 0;
         $shippingTitle = ($methodTitle)
-            ? substr($methodTitle, 0, 40)
+            ? mb_substr($methodTitle, 0, 40)
             : __('Shipping');
         $shippingPrice = ($didNotLoadFromQuote && isset($fallbackPrice))
             ? $fallbackPrice
@@ -696,7 +696,7 @@ class BuildOrder
         foreach ($totals as $totalRow) {
             $amount = round($totalRow->getValue(), 2);
             $title  = ($totalRow->getTitle())
-                ? substr($totalRow->getTitle(), 0, 40)
+                ? mb_substr($totalRow->getTitle(), 0, 40)
                 : __('fee');
 
             $fee = WebPayItem::invoiceFee()
