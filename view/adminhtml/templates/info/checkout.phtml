@@ -1,3 +1,64 @@
 <?php
-$info = $block->getData();
-echo $info['info']['additional_information']['method_title'];
+$info       = $block->getData();
+$additional = $info['info']['additional_information'];
+$title      = $additional['method_title'];
+
+if (isset($additional['OrderId'])) {
+    $mode = ('live' == $additional['mode'])
+        ? '<span style="color: green; font-weight: bold">LIVE</span>'
+        : '<span style="color: red;   font-weight: bold">TEST</span>';
+    $willBuy   = $additional['SveaWillBuyOrder'];
+    $type      = $additional['PaymentType'];
+    $reference = $additional['ClientOrderNumber'];
+    $orderId   = $additional['OrderId'];
+} elseif (isset($additional['reservation']['OrderId'])) {
+    $mode = ('live' == $additional['sveacheckout']['mode'])
+        ? '<span style="color: green; font-weight: bold">LIVE</span>'
+        : '<span style="color: red;   font-weight: bold">TEST</span>';
+    $willBuy   = $additional['reservation']['SveaWillBuyOrder'];
+    $type      = $additional['reservation']['PaymentType'];
+    $reference = $additional['reservation']['ClientOrderNumber'];
+    $orderId   = $additional['reservation']['OrderId'];
+} else {
+    $type      = _('Not acknowledged');
+    $mode      = '<span style="color: gray; font-weight:bold">Unknown</span>';
+}
+?>
+<img src="http://cdn.svea.com/sveaekonomi/rgb_ekonomi_large.png" alt="<?= $title ?>"/>
+<br/>
+<table class="data-grid">
+    <thead>
+        <tr>
+            <th>Key</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php if (!empty($orderId)) : ?>
+        <tr>
+            <td><b><?= _('Svea Order ID') ?></b></td>
+            <td><?= $orderId ?></td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($reference)) : ?>
+        <tr>
+            <td><b><?= _('Our Reference') ?></b></td>
+            <td><?= $reference ?></td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($willBuy)) : ?>
+        <tr>
+            <td><b><?= _('Bought invoice') ?></b></td>
+            <td><?= _($willBuy) ?></td>
+        </tr>
+        <?php endif; ?>
+        <tr>
+            <td><b><?= _('PaymentType') ?></b></td>
+            <td><?= _($type) ?></td>
+        </tr>
+        <tr>
+            <td><b><?= _('Mode') ?></b></td>
+            <td><?= _($mode) ?></td>
+        </tr>
+    </tbody>
+</table>
