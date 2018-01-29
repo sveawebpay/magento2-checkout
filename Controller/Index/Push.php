@@ -10,7 +10,7 @@ use Magento\Quote\Model\QuoteRepository;
 use Webbhuset\Sveacheckout\Model\Payment\CreateOrder;
 use Webbhuset\Sveacheckout\Model\Payment\Acknowledge;
 use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
-use Psr\Log\LoggerInterface as logger;
+use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
 use Magento\Sales\Api\OrderManagementInterface;
 
 /**
@@ -38,7 +38,7 @@ class Push
      *
      * @param \Magento\Framework\App\Action\Context             $context
      * @param \Magento\Framework\View\Result\PageFactory        $resultPageFactory
-     * @param \Psr\Log\LoggerInterface                          $logger
+     * @param \Webbhuset\Sveacheckout\Model\Logger\Logger       $logger
      * @param \Webbhuset\Sveacheckout\Model\Api\BuildOrder      $svea
      * @param \Webbhuset\Sveacheckout\Model\Queue               $queueModel
      * @param \Magento\Quote\Model\QuoteRepository              $quoteRepository
@@ -49,7 +49,7 @@ class Push
     public function __construct(
         Context                  $context,
         PageFactory              $resultPageFactory,
-        logger                   $logger,
+        Logger                   $logger,
         BuildOrder               $svea,
         queueModel               $queueModel,
         QuoteRepository          $quoteRepository,
@@ -84,10 +84,14 @@ class Push
         $queueId    = $this->context->getRequest()->getParam('queueId');
 
         $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
+
+        $this->logger->debug("Push, queueId `{$queueId}`, latest queueId `{$orderQueueItem->getQueueId()}`");
+
         $quoteId        = $orderQueueItem->getQuoteId();
         $orderId        = $orderQueueItem->getOrderId();
 
         if (!$quoteId) {
+            $this->logger->info("Quote not found for queue ID `{$queueId}`");
             $resultPage->setHttpResponseCode('503');
 
             return $resultPage;
@@ -114,6 +118,8 @@ class Push
                 "SveaOrder får q {$quoteId} not found, it probably failed validation");
         }
 
+        $this->logger->debug('Svea order details', $sveaOrder);
+
         $responseObject = new DataObject($sveaOrder);
 
         switch (strtolower($responseObject->getData('Status'))) {
@@ -125,6 +131,7 @@ class Push
 
                     return $this->reportAndReturn(410, "{$quoteId} : is cancelled in both ends.");
                 }
+                $this->logger->info("Canceling order `{$orderId}``");
                 $this->orderManagement->cancel($orderId);
 
                 return $this->reportAndReturn(410, "{$quoteId} : is cancelled in Svea end.");
@@ -135,6 +142,7 @@ class Push
             return $this->reportAndReturn(208, "QueueItem {$quoteId} already handled.");
         }
 
+        $this->logger->info("Updating queue item `{$orderQueueItem->getQueueId()}` state WAIT");
         $orderQueueItem->setPushResponse($responseObject->toJson())
             ->updateState(queueModel::SVEA_QUEUE_STATE_WAIT)
             ->save();
@@ -144,6 +152,7 @@ class Push
             && $orderQueueState != queueModel::SVEA_QUEUE_STATE_NEW
             && $orderQueueState != queueModel::SVEA_QUEUE_STATE_OK
         ) {
+            $this->logger->info("Creating order");
             $orderId = $this->createOrder->createOrder($quote, $orderQueueItem, $sveaOrder, $responseObject);
             if (!$orderId) {
                 return $this->reportAndReturn(426, $this->getResponse()->getHttpResponseCode());
@@ -153,6 +162,7 @@ class Push
         if ('final' == strtolower($responseObject->getData('Status'))) {
             // acknowledge
             $mode = $this->getRequest()->getParam('mode');
+            $this->logger->info("Acknowledging queue item `{$orderQueueItem->getQueueId()}`, mode `{$mode}`");
             $this->acknowledge->acknowledge($orderQueueItem, $responseObject, $mode);
         }
     }

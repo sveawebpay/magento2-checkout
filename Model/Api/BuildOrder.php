@@ -12,6 +12,7 @@ use Magento\Framework\Controller\ResultFactory;
 use Magento\Quote\Api\Data\EstimateAddressInterfaceFactory;
 use Magento\Quote\Api\ShippingMethodManagementInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
+use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
 use Webbhuset\Sveacheckout\Model\Queue as queueModel;
 use Webbhuset\Sveacheckout\Model\QueueFactory as queueModelFactory;
 use Webbhuset\Sveacheckout\Api\QueueRepositoryInterface;
@@ -28,6 +29,7 @@ class BuildOrder
     protected $auth;
     protected $helper;
     protected $checkoutSession;
+    protected $logger;
     protected $messageManager;
     protected $redirect;
     protected $queueModel;
@@ -55,6 +57,7 @@ class BuildOrder
         helper $helper,
         sveaConfig $auth,
         Session $session,
+        Logger $logger,
         ManagerInterface $messageManager,
         ResultFactory $redirect,
         queueModel $queueModel,
@@ -68,6 +71,7 @@ class BuildOrder
         $this->auth                    = $auth;
         $this->helper                  = $helper;
         $this->checkoutSession         = $session;
+        $this->logger                  = $logger;
         $this->messageManager          = $messageManager;
         $this->redirect                = $redirect;
         $this->queueModel              = $queueModel;
@@ -490,13 +494,14 @@ class BuildOrder
 
         $diff = $this->_diffOrderRows($fakeOrder['rows'], $response['Cart']['Items']);
         if (sizeof($diff['error'])) {
+            $this->logger->warning("sveaOrderHasErrors diff error, attempt {$tries}", ['error' => $diff['error']]);
             if (isset($response['Status']) && $response['Status'] != 'Created') {
-
+                $this->logger->warning("sveaOrderHasErrors - incorrect order status `{$response['Status']}`");
                 return true;
             }
 
             if ($tries >= 2) {
-
+                $this->logger->warning("sveaOrderHasErrors - exceeded max number of tries");
                 return true;
             }
 
@@ -504,11 +509,13 @@ class BuildOrder
                 $updatedOrder = $sveaOrder->setCheckoutOrderId((int)$response['OrderId'])
                     ->updateOrder();
                 return $this->sveaOrderHasErrors($sveaOrder, $quote, $updatedOrder, $tries + 1);
-            } catch (Exception $e) {
-
+            } catch (\Exception $e) {
+                $this->logger->error($e);
                 return true;
             }
         }
+
+        $this->logger->debug("sveaOrderHasErrors - no errors after `$tries` tries");
 
         return false;
     }

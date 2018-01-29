@@ -9,6 +9,7 @@ use Magento\Quote\Model\QuoteRepository;
 use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
 use Webbhuset\Sveacheckout\Model\Queue as queueModel;
 use Magento\Sales\Model\ResourceModel\Order\Collection  as  orderCollection;
+use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
 
 /**
  * Class Success.
@@ -24,6 +25,7 @@ class Success
     protected $checkoutSession;
     protected $context;
     protected $buildOrder;
+    protected $logger;
     protected $quoteRepository;
     protected $orderCollection;
     protected $queue;
@@ -36,6 +38,7 @@ class Success
      * @param \Magento\Checkout\Model\Session              $session
      * @param \Webbhuset\Sveacheckout\Model\Api\BuildOrder $buildOrder
      * @param \Magento\Quote\Model\QuoteRepository         $quoteRepository
+     * @param \Webbhuset\Sveacheckout\Model\Logger\Logger  $logger
      */
     public function __construct(
         Context         $context,
@@ -44,7 +47,8 @@ class Success
         BuildOrder      $buildOrder,
         QuoteRepository $quoteRepository,
         queueModel      $queueModel,
-        orderCollection $orderCollection
+        orderCollection $orderCollection,
+        Logger          $logger
     )
     {
         $this->resultPageFactory = $resultPageFactory;
@@ -54,6 +58,7 @@ class Success
         $this->quoteRepository   = $quoteRepository;
         $this->queue             = $queueModel;
         $this->orderCollection   = $orderCollection;
+        $this->logger            = $logger;
         parent::__construct($context);
     }
 
@@ -74,10 +79,12 @@ class Success
         $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
         $quoteId        = $orderQueueItem->getQuoteId();
 
+        $this->logger->debug("Success, queueId `{$queueId}`, latest queueId `{$orderQueueItem->getQueueId()}`");
+
         try {
             $quote = $this->quoteRepository->get($quoteId);
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
-
+            $this->logger->error("Quote `{$quoteId}` not found.");
             return $resultPage;
         }
 

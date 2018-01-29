@@ -12,6 +12,7 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Quote\Model\QuoteFactory;
 use Webbhuset\Sveacheckout\Model\QueueFactory;
 use Webbhuset\Sveacheckout\Helper\Data as helper;
+use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
 
 /**
  * Class Index
@@ -27,6 +28,7 @@ class Index
     protected $checkoutSession;
     protected $context;
     protected $buildOrder;
+    protected $logger;
     protected $orderRepository;
     protected $quoteRepository;
     protected $searchCriteriaBuilder;
@@ -44,6 +46,7 @@ class Index
      * @param \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
      * @param \Magento\Quote\Model\QuoteRepository         $quoteRepository
      * @param \Magento\Quote\Model\QuoteFactory            $quoteFactory
+     * @param \Webbhuset\Sveacheckout\Model\Logger\Logger  $logger
      */
     public function __construct(
         Context                  $context,
@@ -55,6 +58,7 @@ class Index
         QuoteRepository          $quoteRepository,
         QuoteFactory             $quoteFactory,
         QueueFactory             $queueFactory,
+        Logger                   $logger,
         helper                   $helper
     )
     {
@@ -67,6 +71,7 @@ class Index
         $this->quoteRepository       = $quoteRepository;
         $this->quoteFactory          = $quoteFactory;
         $this->queueFactory          = $queueFactory;
+        $this->logger                = $logger;
         $this->helper          = $helper;
 
         parent::__construct($context);
@@ -96,14 +101,17 @@ class Index
         $payment->setMethod(\Webbhuset\Sveacheckout\Model\Ui\ConfigProvider::CHECKOUT_CODE);
 
         if ($quote->getPaymentReference()) {
+            $this->logger->debug("Getting existing order for payment reference `{$quote->getPaymentReference()}`");
             $response = $this->buildOrder->getOrder($quote);
         } else {
+            $this->logger->debug("Creating new order");
             $response = $this->buildOrder->createOrder($quote);
             $this->quoteRepository->save($quote);
         }
         $error      = $this->checkoutSession->getSveaGotError($response);
 
         if (isset($error) && !empty($error)) {
+            $this->logger->error($error);
             $this->messageManager->addErrorMessage(
                 __($error)
             );
@@ -134,6 +142,9 @@ class Index
         if (isset($requestParams['reactivate']) && isset($requestParams['queueId'])) {
             $queueId = (int) $requestParams['queueId'];
             $quoteId = $this->getNewestQuoteId($queueId);
+
+            $this->logger->info("Reactivating queueId `{$queueId}`, quoteId `$quoteId`");
+
             $quote   = $this->_restoreQuote($quoteId);
 
             return $quote;
