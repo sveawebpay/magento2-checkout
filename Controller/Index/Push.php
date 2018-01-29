@@ -118,7 +118,7 @@ class Push
                 "SveaOrder får q {$quoteId} not found, it probably failed validation");
         }
 
-        $this->logger->debug('Svea order details', $sveaOrder);
+        $this->logger->debug('Svea order details', array_merge($sveaOrder, ['Gui' => '...']));
 
         $responseObject = new DataObject($sveaOrder);
 

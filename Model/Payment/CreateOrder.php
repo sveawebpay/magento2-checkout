@@ -91,6 +91,8 @@ class CreateOrder
             $this->transactionHelper->addTransaction($payment, $responseObject, $type);
 
             $connection->commit();
+
+            $this->logger->info("Order {$order->getId()} #{$order->getIncrementId()} created.");
         } catch (\Exception $e) {
             $connection->rollback();
             $this->logger->error($e->getMessage());
