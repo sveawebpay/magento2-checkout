@@ -152,7 +152,7 @@ class Push
             && $orderQueueState != queueModel::SVEA_QUEUE_STATE_NEW
             && $orderQueueState != queueModel::SVEA_QUEUE_STATE_OK
         ) {
-            $this->logger->info("Creating order");
+            $this->logger->info("Creating Magento order for quote `{$quote->getId()}`");
             $orderId = $this->createOrder->createOrder($quote, $orderQueueItem, $sveaOrder, $responseObject);
             if (!$orderId) {
                 return $this->reportAndReturn(426, $this->getResponse()->getHttpResponseCode());
@@ -189,7 +189,10 @@ class Push
             print("http {$httpStatus} {$logMessage}");
         }
 
-        $this->logger->info($logMessage);
+        $this->logger->info(
+            "Report {$httpStatus} - {$logMessage}"
+            . ('true' == $simulation ? ' (simulation)' : '')
+        );
 
         if ($httpStatus > 399) {
 

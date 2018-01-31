@@ -156,7 +156,7 @@ class Validation
             && $orderQueueState != queueModel::SVEA_QUEUE_STATE_NEW
             && $orderQueueState != queueModel::SVEA_QUEUE_STATE_OK
         ) {
-            $this->logger->info("Creating order");
+            $this->logger->info("Creating Magento order for quote `{$quote->getId()}`");
             $orderId = $this->createOrder->createOrder($quote, $orderQueueItem, $sveaOrder, $responseObject);
             if (!$orderId) {
                 return $this->reportAndReturn(203, $this->getResponse()->getHttpResponseCode());
@@ -202,7 +202,10 @@ class Validation
             print("http {$httpStatus} {$logMessage}");
         }
 
-        $this->logger->info($logMessage);
+        $this->logger->info(
+            "Report {$httpStatus} - {$logMessage}"
+            . ('true' == $simulation ? ' (simulation)' : '')
+        );
 
         if ($httpStatus !== 201) {
             $resultPage->setData(['Valid' => false]);
@@ -210,10 +213,13 @@ class Validation
             return $resultPage;
         }
 
+        $clientOrderNumber = $this->makeSveaOrderId($orderId);
         $resultPage->setData([
             'Valid' => true,
-            'ClientOrderNumber' => $this->makeSveaOrderId($orderId)
+            'ClientOrderNumber' => $clientOrderNumber,
         ]);
+
+        $this->logger->info("Order id `{$orderId}`, client order number `{$clientOrderNumber}`");
 
         return $resultPage;
     }

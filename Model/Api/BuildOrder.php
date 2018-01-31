@@ -148,7 +148,7 @@ class BuildOrder
     {
         $sveaOrderId = (int)$quote->getData('payment_reference');
         if (!$sveaOrderId) {
-
+            $this->logger->warning("Get order error - empty payment_reference for quote `{$quote->getId()}`");
             return;
         }
         $sveaOrderBuilder = WebPay::checkout($this->auth);
@@ -168,14 +168,14 @@ class BuildOrder
             if ($validate) {
                 if ($this->sveaOrderHasErrors($sveaOrderBuilder, $quote, $response)) {
                     $this->checkoutSession->setSveaGotError("Quote " . intval($quote->getId()) . " is not valid");
-
+                    $this->logger->warning("Get order - quote `{$quote->getId()}` has errors");
                     return;
                 }
             }
         } catch (\Exception $e) {
-
             $this->checkoutSession->setSveaGotError($e->getMessage());
-
+            $this->logger->error("Get order error - {$e->getMessage()}");
+            $this->logger->error($e);
             return;
         }
 
@@ -510,6 +510,7 @@ class BuildOrder
                     ->updateOrder();
                 return $this->sveaOrderHasErrors($sveaOrder, $quote, $updatedOrder, $tries + 1);
             } catch (\Exception $e) {
+                $this->logger->error("sveaOrderHasErrors - {$e->getMessage()}");
                 $this->logger->error($e);
                 return true;
             }

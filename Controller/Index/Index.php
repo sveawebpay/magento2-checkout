@@ -101,17 +101,17 @@ class Index
         $payment->setMethod(\Webbhuset\Sveacheckout\Model\Ui\ConfigProvider::CHECKOUT_CODE);
 
         if ($quote->getPaymentReference()) {
-            $this->logger->debug("Getting existing order for payment reference `{$quote->getPaymentReference()}`");
+            $this->logger->debug("Getting existing Svea order for quote `{$quote->getId()}` ref `{$quote->getPaymentReference()}`");
             $response = $this->buildOrder->getOrder($quote);
         } else {
-            $this->logger->debug("Creating new order");
+            $this->logger->debug("Creating new Svea order for quote `{$quote->getId()}`");
             $response = $this->buildOrder->createOrder($quote);
             $this->quoteRepository->save($quote);
         }
         $error      = $this->checkoutSession->getSveaGotError($response);
 
         if (isset($error) && !empty($error)) {
-            $this->logger->error($error);
+            $this->logger->error("Checkout page error - $error");
             $this->messageManager->addErrorMessage(
                 __($error)
             );

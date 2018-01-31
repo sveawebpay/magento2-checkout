@@ -95,7 +95,8 @@ class CreateOrder
             $this->logger->info("Order {$order->getId()} #{$order->getIncrementId()} created.");
         } catch (\Exception $e) {
             $connection->rollback();
-            $this->logger->error($e->getMessage());
+            $this->logger->error("Create order error - {$e->getMessage()}");
+            $this->logger->error($e);
             $orderQueueItem->setState(queueModel::SVEA_QUEUE_STATE_ERR)
                 ->save();
 
