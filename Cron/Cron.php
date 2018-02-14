@@ -4,6 +4,7 @@ namespace Webbhuset\Sveacheckout\Cron;
 
 use Webbhuset\Sveacheckout\Model\Queue;
 use Webbhuset\Sveacheckout\Model\ResourceModel\Queue\Collection;
+use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
 
 /**
  * Svea cron model. Removes finished and old queue rows.
@@ -16,13 +17,16 @@ class Cron
 {
     protected $queue;
     protected $collection;
+    protected $logger;
 
     public function __construct(
         Queue      $queue,
-        Collection $collection
+        Collection $collection,
+        Logger     $logger
     ) {
         $this->queue      = $queue;
         $this->collection = $collection;
+        $this->logger     = $logger;
     }
 
     /**
@@ -64,6 +68,7 @@ class Cron
         ];
 
         if (in_array((int)$item->getState(), $deleteItemsWithState)) {
+            $this->logger->info("Deleting queue item `{$item->getQueueId()}` in state `{$item->getState()}`");
             $queueModel->setQueueId($item->getQueueId())->delete();
         }
     }
@@ -84,6 +89,7 @@ class Cron
         ];
 
         if (in_array((int)$item->getState(), $deleteItemsWithState)) {
+            $this->logger->info("Deleting queue item `{$item->getQueueId()}` in state `{$item->getState()}`");
             $queueModel->setQueueId($item->getQueueId())->delete();
         }
     }

@@ -82,4 +82,13 @@
             </argument>
         </arguments>
     </virtualType>
+
+    <type name="Webbhuset\Sveacheckout\Model\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">sveaekonomi-checkout</argument>
+            <argument name="handlers"  xsi:type="array">
+                <item name="system" xsi:type="object">Webbhuset\Sveacheckout\Model\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
 </config>
