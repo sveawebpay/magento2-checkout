@@ -19,6 +19,7 @@ class Locale
      */
     const LOCALE_SV_SE = 'sv-SE';
     const LOCALE_NN_NO = 'nn-NO';
+    const LOCALE_FI_FI = 'fi-FI';
 
     /**
      * Creates an option array with supported combinations of languages,
@@ -38,6 +39,11 @@ class Locale
                 'label' => __('Norway'),
                 'title' => __('Norway'),
                 'value' => serialize($this->getOption(self::LOCALE_NN_NO)),
+            ],
+            [
+                'label' => __('Finland'),
+                'title' => __('Finland'),
+                'value' => serialize($this->getOption(self::LOCALE_FI_FI)),
             ],
         ];
     }
@@ -64,6 +70,13 @@ class Locale
                     'locale'            => $locale,
                     'purchase_country'  => 'NO',
                     'purchase_currency' => 'NOK',
+                ];
+
+            case self::LOCALE_FI_FI:
+                return [
+                    'locale'            => $locale,
+                    'purchase_country'  => 'FI',
+                    'purchase_currency' => 'EUR',
                 ];
         }
 
