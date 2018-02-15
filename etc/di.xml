@@ -9,7 +9,7 @@
     <preference for="Webbhuset\Sveacheckout\Api\Data\QueueSearchResultInterface"
                 type="Webbhuset\Sveacheckout\Model\QueueSearchResult"/>
     <!-- Invoice  -->
-    <virtualType name="SveaCheckoutFacade" type="Magento\Payment\Model\Method\Adapter">
+    <virtualType name="SveaCheckoutFacade" type="Webbhuset\Sveacheckout\Model\Adapter">
         <arguments>
             <argument name="code" xsi:type="const">Webbhuset\Sveacheckout\Model\Ui\ConfigProvider::CHECKOUT_CODE</argument>
             <argument name="formBlockType" xsi:type="string">Webbhuset\Sveacheckout\Block\Form\Checkout</argument>
