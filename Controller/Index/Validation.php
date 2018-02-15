@@ -10,7 +10,7 @@ use Magento\Quote\Model\QuoteRepository;
 use Webbhuset\Sveacheckout\Model\Payment\CreateOrder;
 use Webbhuset\Sveacheckout\Model\Payment\Acknowledge;
 use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
-use Psr\Log\LoggerInterface as logger;
+use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
 use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 
@@ -40,7 +40,7 @@ class Validation
      *
      * @param \Magento\Framework\App\Action\Context             $context
      * @param \Magento\Framework\Controller\Result\JsonFactory  $resultJsonFactory
-     * @param \Psr\Log\LoggerInterface                          $logger
+     * @param \Webbhuset\Sveacheckout\Model\Logger\Logger       $logger
      * @param \Webbhuset\Sveacheckout\Model\Api\BuildOrder      $svea
      * @param \Webbhuset\Sveacheckout\Model\Queue               $queueModel
      * @param \Magento\Quote\Model\QuoteRepository              $quoteRepository
@@ -52,7 +52,7 @@ class Validation
     public function __construct(
         Context                  $context,
         JsonFactory              $resultJsonFactory,
-        logger                   $logger,
+        Logger                   $logger,
         BuildOrder               $svea,
         queueModel               $queueModel,
         QuoteRepository          $quoteRepository,
@@ -88,11 +88,17 @@ class Validation
         $resultPage = $this->resultJsonFactory->create();
         $queueId    = $this->context->getRequest()->getParam('queueId');
 
+        $this->logger->debug("Validation, queueId `{$queueId}`");
+
         $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
+
+        $this->logger->debug("Latest queueId `{$orderQueueItem->getQueueId()}`");
+
         $quoteId        = $orderQueueItem->getQuoteId();
         $orderId        = $orderQueueItem->getOrderId();
 
         if (!$quoteId) {
+            $this->logger->info("Quote not found for queue ID `{$queueId}`");
             $resultPage->setHttpResponseCode('203');
 
             return $resultPage;
@@ -119,6 +125,8 @@ class Validation
                 "SveaOrder får q {$quoteId} not found, it probably failed validation");
         }
 
+        $this->logger->debug('Svea order details', array_merge($sveaOrder, ['Gui' => '...']));
+
         $responseObject = new DataObject($sveaOrder);
 
         switch (strtolower($responseObject->getData('Status'))) {
@@ -127,6 +135,7 @@ class Validation
 
                     return $this->reportAndReturn(206, "{$quoteId} : is cancelled in both ends.");
                 }
+                $this->logger->info("Canceling order `{$orderId}``");
                 $this->orderManagement->cancel($orderId);
 
                 return $this->reportAndReturn(206, "{$quoteId} : is cancelled in Svea end.");
@@ -137,6 +146,7 @@ class Validation
             return $this->reportAndReturn(208, "QueueItem {$quoteId} already handled.");
         }
 
+        $this->logger->info("Updating queue item `{$orderQueueItem->getQueueId()}` state WAIT");
         $orderQueueItem->setPushResponse($responseObject->toJson())
             ->updateState(queueModel::SVEA_QUEUE_STATE_WAIT)
             ->save();
@@ -146,6 +156,7 @@ class Validation
             && $orderQueueState != queueModel::SVEA_QUEUE_STATE_NEW
             && $orderQueueState != queueModel::SVEA_QUEUE_STATE_OK
         ) {
+            $this->logger->info("Creating Magento order for quote `{$quote->getId()}`");
             $orderId = $this->createOrder->createOrder($quote, $orderQueueItem, $sveaOrder, $responseObject);
             if (!$orderId) {
                 return $this->reportAndReturn(203, $this->getResponse()->getHttpResponseCode());
@@ -191,7 +202,10 @@ class Validation
             print("http {$httpStatus} {$logMessage}");
         }
 
-        $this->logger->info($logMessage);
+        $this->logger->info(
+            "Report {$httpStatus} - {$logMessage}"
+            . ('true' == $simulation ? ' (simulation)' : '')
+        );
 
         if ($httpStatus !== 201) {
             $resultPage->setData(['Valid' => false]);
@@ -199,10 +213,13 @@ class Validation
             return $resultPage;
         }
 
+        $clientOrderNumber = $this->makeSveaOrderId($orderId);
         $resultPage->setData([
             'Valid' => true,
-            'ClientOrderNumber' => $this->makeSveaOrderId($orderId)
+            'ClientOrderNumber' => $clientOrderNumber,
         ]);
+
+        $this->logger->info("Order id `{$orderId}`, client order number `{$clientOrderNumber}`");
 
         return $resultPage;
     }
