@@ -155,6 +155,18 @@
                     <source_model>Webbhuset\Sveacheckout\Model\Config\Source\Locale</source_model>
                     <can_be_empty>1</can_be_empty>
                 </field>
+                <field
+                    id="include_options_on_invoice"
+                    translate="label"
+                    type="select"
+                    sortOrder="155"
+                    showInDefault="1"
+                    showInWebsite="0"
+                    showInStore="0"
+                >
+                    <label>Send item options to Svea, will be shown on invoice</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
                 <group
                     id="developers"
                     translate="label"

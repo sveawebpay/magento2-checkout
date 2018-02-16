@@ -169,7 +169,7 @@ class BuildOrder
                 if ($this->sveaOrderHasErrors($sveaOrderBuilder, $quote, $response)) {
                     $this->checkoutSession->setSveaGotError("Quote " . intval($quote->getId()) . " is not valid");
                     $this->logger->warning("Get order - quote `{$quote->getId()}` has errors");
-					
+
                     return;
                 }
             }
@@ -177,7 +177,7 @@ class BuildOrder
             $this->checkoutSession->setSveaGotError($e->getMessage());
             $this->logger->error("Get order error - {$e->getMessage()}");
             $this->logger->error($e);
-			
+
             return;
         }
 
@@ -296,7 +296,7 @@ class BuildOrder
                 ->setVatPercent((int)round($item->getTaxPercent()))
                 ->setQuantity((float)round($qty, 2))
                 ->setArticleNumber($prefix . $item->getSku())
-                ->setName(mb_substr($item->getName(), 0, 40))
+                ->setName(mb_substr($item->getName(). $this->getItemOptions($item), 0, 40 ))
                 ->setTemporaryReference((string)$item->getId());
             $buildOrder->addOrderRow($orderRowItem);
 
@@ -308,6 +308,42 @@ class BuildOrder
 
                 $buildOrder->addDiscount($itemRowDiscount);
             }
+        }
+    }
+
+    protected function getItemOptions($item)
+    {
+        $paymentInformation = $item->getQuote()->getPaymentInformation();
+        $paymentInformation = unserialize($paymentInformation);
+        $isActive = (isset($paymentInformation['include_options_on_invoice']))?
+            $paymentInformation['include_options_on_invoice'] : false;
+
+        if (!$isActive) {
+            return '';
+        }
+
+        $itemOptions = [];
+        $options     = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
+        if ($options) {
+            if (isset($options['options']) && !empty($options['options'])) {
+                $itemOptions = array_merge($itemOptions, $options['options']);
+            }
+            if (isset($options['additional_options']) && !empty($options['additional_options'])) {
+                $itemOptions = array_merge($itemOptions, $options['additional_options']);
+            }
+            if (isset($options['attributes_info']) && !empty($options['attributes_info'])) {
+                $itemOptions = array_merge($itemOptions, $options['attributes_info']);
+            }
+        }
+        $options = [];
+        foreach ($itemOptions as $option) {
+            $options[] = implode(': ', $option);
+        }
+        $options = implode(', ',$options);
+
+        if (!empty(trim($options))) {
+
+            return ' '.$options;
         }
     }
 

@@ -14,6 +14,7 @@ class Observer
      */
     private $attributes = [
         'payment_reference',
+        'payment_information',
     ];
 
     /**

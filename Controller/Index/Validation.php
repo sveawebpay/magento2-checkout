@@ -233,7 +233,7 @@ class Validation
         $separator     = '_';
         $lengthOfHash  = $allowedLength - (strlen((string)$incrementId) + strlen($separator));
         $hashedBaseUrl = sha1($this->context->getUrl()->getBaseUrl());
-        $sveaOrderId   = $incrementId . $separator . substr($hashedBaseUrl, 0, $lengthOfHash);
+        $sveaOrderId   = $incrementId . $separator . mb_substr($hashedBaseUrl, 0, $lengthOfHash);
 
         return $sveaOrderId;
     }
