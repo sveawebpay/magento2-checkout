@@ -45,7 +45,7 @@ class ConfigProvider
      *
      * @return string API integration Checkout Merchant ID
      */
-    public function getCheckoutMerchantId()
+    public function getCheckoutMerchantId($countryId  = Null)
     {
         return $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/merchant_id');
     }
@@ -55,7 +55,7 @@ class ConfigProvider
      *
      * @return string API integration Secret
      */
-    public function getCheckoutSecret()
+    public function getCheckoutSecret($countryId  = Null)
     {
         return $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/shared_secret');
     }
