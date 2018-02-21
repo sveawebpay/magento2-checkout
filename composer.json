@@ -10,10 +10,10 @@
     }
   ],
   "depends": {
-    "sveaekonomi/webpay": "~3.2.0"
+    "sveaekonomi/webpay": "~3.3.2"
   },
   "require": {
-    "sveaekonomi/webpay": "~3.2.0"
+    "sveaekonomi/webpay": "~3.3.2"
   },
   "version": "1.0.23",
   "autoload": {
