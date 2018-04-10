@@ -110,12 +110,13 @@ class Push
 
             return $this->reportAndReturn(404, "Quote {$quoteId} not found");
         }
-        $sveaOrder = $this->svea->getOrder($quote);
+
+        $sveaOrder = $this->svea->getOrder($quote, 'push');
 
         if (!$sveaOrder) {
             return $this->reportAndReturn(
                 404,
-                "SveaOrder får q {$quoteId} not found, it probably failed validation");
+                "SveaOrder for q {$quoteId} not found, it probably failed validation");
         }
 
         $this->logger->debug('Svea order details', array_merge($sveaOrder, ['Gui' => '...']));

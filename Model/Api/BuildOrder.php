@@ -137,6 +137,66 @@ class BuildOrder
     }
 
     /**
+     * Check if Svea order is still valid.
+     *
+     * @param $sveaOrder
+     * @param $quote
+     *
+     * @return mixed
+     */
+    protected function checkQuote($sveaOrder, $quote)
+    {
+        $sveaId = (int)$quote->getPaymentReference();
+        if ($sveaId) {
+            try {
+                $orderResponse = $sveaOrder->setCheckoutOrderId($sveaId)->getOrder($sveaId);
+            } catch (\Svea\Checkout\Exception\SveaApiException $e) {
+
+                $quote = $this->replaceQuote($quote);
+            }
+            if (isset($orderResponse) && $orderResponse['Status'] != 'Created') {
+
+                $quote = $this->replaceQuote($quote);
+            }
+        }
+
+        return $quote;
+    }
+
+    /**
+     * @param $oldQuote
+     *
+     * @return mixed
+     */
+    protected function replaceQuote($oldQuote)
+    {
+        $quote = $this->quoteFactory->create();
+        $quote->merge($oldQuote)
+            ->setIsActive(1)
+            ->setStoreId($oldQuote->getStoreId())
+            ->setReservedOrderId(null)
+            ->setShippingAddress($oldQuote->getShippingAddress())
+            ->setPaymentReference(null)
+            ->collectTotals();
+
+        $shippingAddress = $quote->getShippingAddress();
+        $shippingAddress->setShippingMethod($oldQuote->getShippingAddress()->getMethod())
+            ->collectShippingRates()
+            ->save();
+
+        $quote->collectTotals();
+
+        $oldQuote->setIsActive(0);
+        $this->quoteRepository->save($oldQuote);
+        $this->quoteRepository->save($quote);
+
+        $this->checkoutSession->replaceQuote($quote)
+            ->unsLastRealOrderId();
+
+        return $quote;
+    }
+
+    /**
      * Update Svea order.
      *
      * @param  \Magento\Quote\Model\Quote $quote
@@ -152,6 +212,10 @@ class BuildOrder
             return;
         }
         $sveaOrderBuilder = WebPay::checkout($this->auth);
+        if (true === $validate && $quote) {
+            $quote = $this->checkQuote($sveaOrderBuilder, $quote);
+        }
+
         $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
 
         try {

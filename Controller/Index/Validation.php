@@ -11,6 +11,7 @@ use Webbhuset\Sveacheckout\Model\Payment\CreateOrder;
 use Webbhuset\Sveacheckout\Model\Payment\Acknowledge;
 use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
 use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
+use Webbhuset\Sveacheckout\Helper\Data as Helper;
 use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 
@@ -34,6 +35,7 @@ class Validation
     protected $acknowledge;
     protected $orderManagement;
     protected $orderInterface;
+    protected $helper;
 
     /**
      * Validation constructor.
@@ -59,7 +61,8 @@ class Validation
         CreateOrder              $createOrder,
         Acknowledge              $acknowledge,
         OrderManagementInterface $OrderManagementInterface,
-        OrderInterface           $orderInterface
+        OrderInterface           $orderInterface,
+        Helper                   $helper
     )
     {
         $this->resultJsonFactory = $resultJsonFactory;
@@ -72,6 +75,7 @@ class Validation
         $this->acknowledge        = $acknowledge;
         $this->orderManagement    = $OrderManagementInterface;
         $this->orderInterface     = $orderInterface;
+        $this->helper             = $helper;
 
         parent::__construct($context);
     }
@@ -122,7 +126,7 @@ class Validation
         if (!$sveaOrder) {
             return $this->reportAndReturn(
                 207,
-                "SveaOrder får q {$quoteId} not found, it probably failed validation");
+                "SveaOrder for q {$quoteId} not found, it probably failed validation");
         }
 
         $this->logger->debug('Svea order details', array_merge($sveaOrder, ['Gui' => '...']));
