@@ -87,7 +87,7 @@ class Index
     public function execute()
     {
         $resultPage = $this->_resultPageFactory->create();
-        $active = $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/active');
+        $active     = $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/active');
         $paymentInformation = serialize($this->getSettings());
         if (!$active) {
 
@@ -102,7 +102,12 @@ class Index
         $payment->setMethod(\Webbhuset\Sveacheckout\Model\Ui\ConfigProvider::CHECKOUT_CODE);
 
         if ($quote->getPaymentReference()) {
-            $this->logger->debug("Getting existing Svea order for quote `{$quote->getId()}` ref `{$quote->getPaymentReference()}`");
+            $this->logger->debug(
+                "Getting existing Svea order for quote `{$quote->getId()}` 
+                ref `{$quote->getPaymentReference()}`"
+            );
+
+
             $response = $this->buildOrder->getOrder($quote);
         } else {
             $this->logger->debug("Creating new Svea order for quote `{$quote->getId()}`");

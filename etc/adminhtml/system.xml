@@ -80,7 +80,7 @@
                         showInStore="1"
                 >
                     <label>New Order Status</label>
-                    <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
+                    <source_model>Magento\Sales\Model\Config\Source\Order\Status\Newprocessing</source_model>
                 </field>
                 <field
                         id="acknowledged_order_status"
@@ -92,7 +92,7 @@
                         showInStore="1"
                 >
                     <label>Acknowledged Order Status</label>
-                    <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
+                    <source_model>Magento\Sales\Model\Config\Source\Order\Status\Newprocessing</source_model>
                 </field>
                 <field
                         id="sort_order"
@@ -217,6 +217,23 @@
                             &lt;small&gt;
                         </label>
                         <can_be_empty>1</can_be_empty>
+                    </field>
+                    <field
+                            id="reference"
+                            translate="label"
+                            type="select"
+                            sortOrder="30"
+                            showInDefault="1"
+                            showInWebsite="1"
+                            showInStore="1"
+                    >
+                        <label><![CDATA[
+                                    Suffix is a duplicate id countermeasure <br/>
+                                    <strong>do not</strong> use plain id's on a stage or dev environment<br/>
+                                    if the range can overlap with another environment.
+                                ]]>
+                        </label>
+                        <source_model>Webbhuset\Sveacheckout\Model\Config\Source\Reference</source_model>
                     </field>
                 </group>
             </group>

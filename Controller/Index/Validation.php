@@ -226,15 +226,27 @@ class Validation
 
     protected function makeSveaOrderId($orderId)
     {
+        $reference = $orderId;
+        $useForReference = $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/developers/reference');
+
+        if (in_array($useForReference, ['plain-increment-id', 'suffixed-increment-id'])) {
+            $reference = $this->orderInterface->loadByAttribute('entity_id', $orderId)->getIncrementId();
+        }
+
+        if (in_array($useForReference, ['plain-increment-id', 'plain-order-id'])) {
+
+            return $reference;
+        }
+
         //To avoid order already being created, if you for example have
         //stageEnv/devEnv and ProductionEnv with order id in same range.
-        $incrementId   = $this->orderInterface->loadByAttribute('entity_id', $orderId)->getIncrementId();
+
         $allowedLength = 32;
         $separator     = '_';
-        $lengthOfHash  = $allowedLength - (strlen((string)$incrementId) + strlen($separator));
+        $lengthOfHash  = $allowedLength - (strlen((string)$reference) + strlen($separator));
         $hashedBaseUrl = sha1($this->context->getUrl()->getBaseUrl());
-        $sveaOrderId   = $incrementId . $separator . mb_substr($hashedBaseUrl, 0, $lengthOfHash);
+        $clientOrder   = $reference . $separator . mb_substr($hashedBaseUrl, 0, $lengthOfHash);
 
-        return $sveaOrderId;
+        return $clientOrder;
     }
 }

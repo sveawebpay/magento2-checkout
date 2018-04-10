@@ -9,6 +9,7 @@ use Webbhuset\Sveacheckout\Helper\Transaction as transactionHelper;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface as scope;
 use Magento\Sales\Model\Service\OrderService as orderService;
+use Magento\Sales\Model\Order\Status;
 
 /**
  * Class Acknowledge
@@ -31,18 +32,21 @@ class Acknowledge
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Webbhuset\Sveacheckout\Helper\Transaction         $transactionHelper
      * @param \Magento\Sales\Model\Service\OrderService          $orderService
+     * @param \Magento\Sales\Model\Order\Status                  $status
      */
     public function __construct(
         OrderRepository   $orderRepository,
         scope             $scopeConfig,
         transactionHelper $transactionHelper,
-        orderService      $orderService
+        orderService      $orderService,
+        Status            $status
     )
     {
         $this->orderRepository   = $orderRepository;
         $this->scopeConfig       = $scopeConfig;
         $this->transactionHelper = $transactionHelper;
         $this->orderService      = $orderService;
+        $this->status            = $status;
     }
 
     /**
@@ -74,8 +78,12 @@ class Acknowledge
         }
 
         $status = $this->getAcknowledgedOrderStatus();
+        $state  = $this->status->getCollection()
+            ->joinStates()
+            ->addFieldToFilter('main_table.status', $status)
+            ->getFirstItem()->getData('state');
 
-        $order->setState(\Magento\Sales\Model\Order::STATE_NEW)
+        $order->setState($state)
             ->setStatus($status)
             ->save();
 
