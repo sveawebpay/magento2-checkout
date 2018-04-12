@@ -15,6 +15,7 @@ use Magento\Quote\Api\CartRepositoryInterface;
 use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
 use Webbhuset\Sveacheckout\Model\Queue as queueModel;
 use Webbhuset\Sveacheckout\Model\QueueFactory as queueModelFactory;
+use Magento\Quote\Model\QuoteFactory;
 use Webbhuset\Sveacheckout\Api\QueueRepositoryInterface;
 
 /**
@@ -38,6 +39,8 @@ class BuildOrder
     protected $shippingMethodManager;
     protected $quoteRepository;
     protected $queueFactory;
+    protected $quoteFactory;
+
 
     /**
      * BuildOrder constructor.
@@ -64,8 +67,9 @@ class BuildOrder
         QueueRepositoryInterface $queueRepository,
         EstimateAddressInterfaceFactory $estimatedAddressFactory,
         ShippingMethodManagementInterface $shippingMethodManager,
-        CartRepositoryInterface $quoteRepository,
-        queueModelFactory $queueFactory
+        CartRepositoryInterface           $quoteRepository,
+        queueModelFactory                 $queueFactory,
+        QuoteFactory                      $quoteFactory
     )
     {
         $this->auth                    = $auth;
@@ -80,6 +84,7 @@ class BuildOrder
         $this->shippingMethodManager   = $shippingMethodManager;
         $this->quoteRepository         = $quoteRepository;
         $this->queueFactory            = $queueFactory;
+        $this->quoteFactory            = $quoteFactory;
     }
 
     /**
