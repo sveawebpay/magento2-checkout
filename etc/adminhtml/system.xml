@@ -167,6 +167,26 @@
                     <label>Send item options to Svea, will be shown on invoice</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field
+                        id="allowed_customers"
+                        translate="label"
+                        type="select"
+                        sortOrder="156"
+                        showInDefault="1"
+                        showInWebsite="0"
+                        showInStore="0"
+                >
+                    <label>
+                        (optional) Select Market
+                        &lt;br /&gt;
+                        &lt;small&gt;
+                        &lt;i&gt;Your visitor has the option to switch between customer type company and individual
+                        during checkout. This setting dictates which option is pre chosen and if visitor should
+                        have the option too switch between individual and company at all.&lt;/i&gt;
+                        &lt;small&gt;
+                    </label>
+                    <source_model>Webbhuset\Sveacheckout\Model\Config\Source\CustomerType</source_model>
+                </field>
                 <group
                     id="developers"
                     translate="label"

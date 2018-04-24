@@ -486,7 +486,24 @@ class BuildOrder
         \Svea\WebPay\Checkout\CheckoutOrderEntry $buildOrder,
         \Magento\Quote\Api\Data\CartInterface    $quote
     ) {
-        $customer = $quote->getCustomer();
+        $customer             = $quote->getCustomer();
+        $allowedCustomerType  = $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/allowed_customers');
+        if ($allowedCustomerType !== false) {
+            $ct = new \Webbhuset\Sveacheckout\Model\Config\Source\CustomerType;
+
+            $readOnly  = (in_array($allowedCustomerType, [$ct::EXCLUSIVELY_INDIVIDUALS, $ct::EXCLUSIVELY_COMPANIES]))
+                       ? true
+                       : false;
+            $isCompany = (in_array($allowedCustomerType, [$ct::EXCLUSIVELY_COMPANIES, $ct::PRIMARILY_COMPANIES]))
+                       ? true
+                       : false;
+
+            $allowedCustomerType = WebPayItem::presetValue()
+                ->setTypeName(\Svea\WebPay\Checkout\Model\PresetValue::IS_COMPANY)
+                ->setValue($isCompany)
+                ->setIsReadonly($readOnly);
+            $buildOrder->addPresetValue($allowedCustomerType);
+        }
 
         if ($customer->getEmail()) {
             $email = $customer->getEmail();
