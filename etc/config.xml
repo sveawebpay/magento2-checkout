@@ -30,6 +30,7 @@
                 <shared_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <is_gateway>1</is_gateway>
                 <allowed_customers>false</allowed_customers>
+                <override_terms_url>false</override_terms_url>
             </webbhuset_sveacheckout>
         </payment>
     </default>

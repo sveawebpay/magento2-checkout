@@ -187,6 +187,35 @@
                     </label>
                     <source_model>Webbhuset\Sveacheckout\Model\Config\Source\CustomerType</source_model>
                 </field>
+                <field
+                        id="override_terms_url"
+                        translate="label"
+                        type="select"
+                        sortOrder="156"
+                        showInDefault="1"
+                        showInWebsite="0"
+                        showInStore="0"
+                >
+                    <label>Override Terms url?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field
+                        id="terms_url"
+                        translate="label"
+                        type="text"
+                        sortOrder="157"
+                        showInDefault="1"
+                        showInWebsite="1"
+                        showInStore="1"
+                >
+                    <label>Terms URL
+                        &lt;br /&gt;
+                        &lt;small&gt;
+                        &lt;i&gt;e.g: https://example.com/terms/&lt;/i&gt;
+                        &lt;small&gt;
+                    </label>
+                    <can_be_empty>1</can_be_empty>
+                </field>
                 <group
                     id="developers"
                     translate="label"

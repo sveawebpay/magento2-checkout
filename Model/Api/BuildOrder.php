@@ -464,12 +464,16 @@ class BuildOrder
 
         $restoreParams = array_merge($pushParams, ['reactivate' => 'true']);
 
+        $termsUri = $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/override_terms_url')
+                  ? $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/terms_url')
+                  : $this->helper->getUrl('sveacheckout/Index/terms', []);
+
         $buildOrder->setClientOrderNumber($clientId)
                    ->setCheckoutUri($this->helper->getUrl('sveacheckout/Index/index', $restoreParams))
                    ->setValidationCallbackUri($validationUri)
                    ->setConfirmationUri($this->helper->getUrl('sveacheckout/Index/success', $pushParams))
                    ->setPushUri($pushUri)
-                   ->setTermsUri($this->helper->getUrl('sveacheckout/Index/terms', []));
+                   ->setTermsUri($termsUri);
 
         return $this;
     }
