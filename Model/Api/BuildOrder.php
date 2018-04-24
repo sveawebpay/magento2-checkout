@@ -41,13 +41,13 @@ class BuildOrder
     protected $queueFactory;
     protected $quoteFactory;
 
-
     /**
      * BuildOrder constructor.
      *
      * @param \Webbhuset\Sveacheckout\Helper\Data                     $helper
      * @param \Webbhuset\Sveacheckout\Model\Api\Init                  $auth
      * @param \Magento\Checkout\Model\Session                         $session
+     * @param \Webbhuset\Sveacheckout\Model\Logger\Logger             $logger
      * @param \Magento\Framework\Message\ManagerInterface             $messageManager
      * @param \Magento\Framework\Controller\ResultFactory             $redirect
      * @param \Webbhuset\Sveacheckout\Model\Queue                     $queueModel
@@ -55,17 +55,19 @@ class BuildOrder
      * @param \Magento\Quote\Api\Data\EstimateAddressInterfaceFactory $estimatedAddressFactory
      * @param \Magento\Quote\Api\ShippingMethodManagementInterface    $shippingMethodManager
      * @param \Magento\Quote\Api\CartRepositoryInterface              $quoteRepository
+     * @param \Webbhuset\Sveacheckout\Model\QueueFactory              $queueFactory
+     * @param \Magento\Quote\Model\QuoteFactory                       $quoteFactory
      */
     public function __construct(
-        helper $helper,
-        sveaConfig $auth,
-        Session $session,
-        Logger $logger,
-        ManagerInterface $messageManager,
-        ResultFactory $redirect,
-        queueModel $queueModel,
-        QueueRepositoryInterface $queueRepository,
-        EstimateAddressInterfaceFactory $estimatedAddressFactory,
+        helper                            $helper,
+        sveaConfig                        $auth,
+        Session                           $session,
+        Logger                            $logger,
+        ManagerInterface                  $messageManager,
+        ResultFactory                     $redirect,
+        queueModel                        $queueModel,
+        QueueRepositoryInterface          $queueRepository,
+        EstimateAddressInterfaceFactory   $estimatedAddressFactory,
         ShippingMethodManagementInterface $shippingMethodManager,
         CartRepositoryInterface           $quoteRepository,
         queueModelFactory                 $queueFactory,
@@ -91,10 +93,11 @@ class BuildOrder
      * Create Svea order.
      *
      * @param  \Magento\Quote\Model\Quote $quote
+     * @param null $countryId
      *
-     * @return void|array
+     * @return array|void
      */
-    public function createOrder($quote)
+    public function createOrder($quote, $countryId = null)
     {
         $sveaOrderBuilder = WebPay::checkout($this->auth);
 
@@ -104,23 +107,21 @@ class BuildOrder
             return;
         }
 
-        if (!$quote->getShippingAddress()->getCountryId()) {
-            $this->_addBasicAddressToQuote($quote);
-            $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
-        }
+        $this->_addBasicAddressToQuote($quote);
+        $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
 
         try {
             $queueItem = $this->createQueueItem($quote);
             $response = $this->getOrder($quote);
+
             if (!is_array($response)) {
-                $this->_initialSettings($sveaOrderBuilder)
+                $this->_initialSettings($sveaOrderBuilder, $countryId)
                      ->_presetValues($sveaOrderBuilder, $quote)
                      ->_additionalSettings($sveaOrderBuilder, $quote)
                      ->_addCartItems($sveaOrderBuilder, $quote)
                      ->_addShipping($sveaOrderBuilder, $quote, false)
                      ->_addTotalRows($sveaOrderBuilder, $quote);
                 $response = $sveaOrderBuilder->createOrder();
-
                 if ($this->sveaOrderHasErrors($sveaOrderBuilder, $quote, $response)) {
                     $this->checkoutSession->setSveaGotError("Quote " . intval($quote->getId()) . " is not valid");
 
@@ -183,6 +184,7 @@ class BuildOrder
             ->setShippingAddress($oldQuote->getShippingAddress())
             ->setPaymentReference(null)
             ->collectTotals();
+        $quote = $this->helper->setPaymentMethod($quote);
 
         $shippingAddress = $quote->getShippingAddress();
         $shippingAddress->setShippingMethod($oldQuote->getShippingAddress()->getMethod())
@@ -216,6 +218,7 @@ class BuildOrder
             $this->logger->warning("Get order error - empty payment_reference for quote `{$quote->getId()}`");
             return;
         }
+
         $sveaOrderBuilder = WebPay::checkout($this->auth);
         if (true === $validate && $quote) {
             $quote = $this->checkQuote($sveaOrderBuilder, $quote);
@@ -224,7 +227,7 @@ class BuildOrder
         $quote->setTotalsCollectedFlag(false)->collectTotals()->save();
 
         try {
-            $this->_initialSettings($sveaOrderBuilder)
+            $this->_initialSettings($sveaOrderBuilder, $quote->getShippingAddress()->getCountryId())
                  ->_additionalSettings($sveaOrderBuilder, $quote)
                  ->_addCartItems($sveaOrderBuilder, $quote)
                  ->_addShipping($sveaOrderBuilder, $quote, false)
@@ -243,6 +246,7 @@ class BuildOrder
                 }
             }
         } catch (\Exception $e) {
+
             $this->checkoutSession->setSveaGotError($e->getMessage());
             $this->logger->error("Get order error - {$e->getMessage()}");
             $this->logger->error($e);
@@ -478,6 +482,14 @@ class BuildOrder
         return $this;
     }
 
+    public function updateCountry($quote, $countryId)
+    {
+        $quote->getBillingAddress()->setCountryId($countryId)->save();
+        $quote->getShippingAddress()->setCountryId($countryId)->save();
+
+        return $this->createOrder($quote, $countryId);
+    }
+
     /**
      * Set preset values
      *
@@ -570,19 +582,24 @@ class BuildOrder
     }
 
     /**
-     * @param \Svea\WebPay\Checkout\CheckoutOrderEntry  $buildOrder
+     *
+     *
+     * @param      $buildOrder
+     * @param null $countryId
      *
      * @return $this
      */
-    protected function _initialSettings($buildOrder)
+    protected function _initialSettings($buildOrder, $countryId = null)
     {
         $getLocale = unserialize(
             $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/purchase_locale')
         );
 
+        $countryId = ($countryId) ? $countryId : $getLocale['purchase_country'];
+
         $buildOrder->setCurrency($getLocale['purchase_currency'])
                    ->setLocale($getLocale['locale'])
-                   ->setCountryCode($getLocale['purchase_country']);
+                   ->setCountryCode($countryId);
 
         return $this;
     }
@@ -611,7 +628,7 @@ class BuildOrder
         }
 
         $sveaOrderBuilder = WebPay::checkout($this->auth);
-        $this->_initialSettings($sveaOrderBuilder)
+        $this->_initialSettings($sveaOrderBuilder, $quote->getShippingAddress()->getCountryId())
              ->_presetValues($sveaOrderBuilder, $quote)
              ->_additionalSettings($sveaOrderBuilder, $quote)
              ->_addCartItems($sveaOrderBuilder, $quote)
@@ -697,6 +714,7 @@ class BuildOrder
 
         //Neither Default nor chosen exists, select cheapest option.
         $selected = $shippingAddress->getShippingRateByCode($method);
+
         if (!$selected) {
             $method = $this->_getCheapestShippingOption($quote);
             $shippingAddress->setShippingMethod($method)
@@ -743,9 +761,16 @@ class BuildOrder
         $locales        = unserialize($this->helper->getStoreConfig('payment/webbhuset_sveacheckout/purchase_locale'));
         $defaultCountry = $locales['purchase_country'];
 
+        $selectedCountry = $quote->getShippingAddress()->getCountryId();
+        if(!$selectedCountry) {
+            $country = $defaultCountry;
+        } else {
+            $country = $selectedCountry;
+        }
+
         if (!$quote->getShippingAddress()->getShippingMethod()) {
             $estimatedAddress = $this->estimatedAddressFactory->create();
-            $estimatedAddress->setCountryId($defaultCountry);
+            $estimatedAddress->setCountryId($country);
             $this->shippingMethodManager->estimateByAddress($quote->getId(), $estimatedAddress);
         }
 

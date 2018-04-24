@@ -31,6 +31,7 @@
                 <is_gateway>1</is_gateway>
                 <allowed_customers>false</allowed_customers>
                 <override_terms_url>false</override_terms_url>
+                <enable_international_purchases>false</enable_international_purchases>
             </webbhuset_sveacheckout>
         </payment>
     </default>

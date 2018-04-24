@@ -4,7 +4,11 @@ require([
   'Magento_Checkout/js/model/quote',
   'Magento_Checkout/js/view/cart/shipping-estimation',
   'Magento_Checkout/js/checkout-data',
-], function ($, getTotals, quote, shippingEstimation, checkoutData) {
+  'Magento_Checkout/js/model/address-converter',
+  'Magento_Customer/js/customer-data',
+  'Magento_Checkout/js/model/cart/cache',
+  'Magento_Checkout/js/model/shipping-service'
+], function ($, getTotals, quote, shippingEstimation, checkoutData, addressConverter, customerData) {
 
 
   var addressData = {'countryId': sveacheckout.country};
@@ -19,7 +23,7 @@ require([
     updateCheckout(postData, false);
     return false;
   });
-
+  function callbackFunction(){}
   // on clear cart action
   $('body').on('click', '#empty_cart_button', function () {
     // set data
@@ -54,11 +58,37 @@ require([
       postData[k] = v;
     }));
     postData['actionType'] = 'cart_update';
-
-
-    // send data
     updateCheckout(postData, true);
+
     return false;
+  });
+
+  $('body').on('change',"[name='country_id']",function(){
+    var formData = $('#shipping-zip-form').serializeArray();
+    var postData = {};
+    $.each(formData, (function (k, v) {
+      k = v.name;
+      v = v.value;
+      postData[k] = v;
+    }));
+    postData['actionType'] = 'update_country';
+
+    if (postData['country_id'] !== '') {
+
+      updateCheckout(postData, true);
+      callbackFunction = function () {
+        var sections = ['customer', 'checkout-data', 'cart'];
+        customerData.invalidate(sections);
+        customerData.reload(sections, true);
+
+        require([
+          'jquery',
+          'Magento_Checkout/js/model/quote'
+        ], function ($, quote) {
+        });
+
+      }
+    }
   });
 
   // on qty enter key action
@@ -112,14 +142,14 @@ require([
           window.scoApi.setCheckoutEnabled(true);
         }
       },
-    });
+    }).done(callbackFunction);
   }
 
   // update custom ajax blocks
   function updateCustomBlocks(blocks) {
     // loop updated blocks
     $.each(blocks, function (key, block) {
-      blockName = block.name;
+      blockName    = block.name;
       blockContent = block.content;
 
       // loop block ids
@@ -131,6 +161,7 @@ require([
 
       // replace content if matching block exists in DOM
       if (typeof blockElement !== 'undefined' && $(blockElement).length) {
+
         $(blockElement).html(blockContent);
       }
     });

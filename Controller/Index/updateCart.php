@@ -11,7 +11,9 @@ use Magento\Quote\Model\QuoteRepository;
 use Magento\CatalogInventory\Api\StockStateInterface;
 use Magento\CatalogInventory\Api\StockItemRepositoryInterface as StockItemRepositoryInterface;
 use Magento\Quote\Api\Data\ShippingInterface;
+use Magento\Quote\Model\QuoteFactory;
 use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
+use Magento\Quote\Model\QuoteIdMaskFactory;
 
 /**
  * Class updateCart.
@@ -35,6 +37,9 @@ class updateCart
     protected $stockItemRepository;
     protected $cartManagement;
     protected $cart;
+    protected $quoteFactory;
+    protected $configProvider;
+    protected $quoteIdMaskFactory;
 
     /**
      * updateCart constructor.
@@ -48,6 +53,8 @@ class updateCart
      * @param \Magento\Quote\Model\QuoteRepository                       $quoteRepository
      * @param \Magento\CatalogInventory\Api\StockItemRepositoryInterface $stockItemRepository
      * @param \Magento\Quote\Api\Data\ShippingInterface                  $shippingInterface
+     * @param \Magento\Checkout\Model\Cart                               $cart
+     * @param \Magento\Quote\Model\QuoteFactory                          $quoteFactory
      */
     public function __construct(
         Context                      $context,
@@ -59,21 +66,40 @@ class updateCart
         QuoteRepository              $quoteRepository,
         StockItemRepositoryInterface $stockItemRepository,
         ShippingInterface            $shippingInterface,
-        Cart                         $cart
+        Cart                         $cart,
+        QuoteFactory                 $quoteFactory,
+        \Magento\Checkout\Model\CompositeConfigProvider $configProvider,
+        QuoteIdMaskFactory $quoteIdMaskFactory
     )
     {
-        $this->_resultPageFactory  = $resultPageFactory;
-        $this->jsonFactory         = $jsonFactory;
-        $this->checkoutSession     = $session;
-        $this->buildOrder          = $buildOrder;
-        $this->context             = $context;
-        $this->quoteRepository     = $quoteRepository;
-        $this->stockItem           = $stockItem;
-        $this->stockItemRepository = $stockItemRepository;
-        $this->shippingInterface   = $shippingInterface;
-        $this->cart                = $cart;
-        parent::__construct($context);
+        $this->_resultPageFactory    = $resultPageFactory;
+        $this->jsonFactory           = $jsonFactory;
+        $this->checkoutSession       = $session;
+        $this->buildOrder            = $buildOrder;
+        $this->context               = $context;
+        $this->quoteRepository       = $quoteRepository;
+        $this->stockItem             = $stockItem;
+        $this->stockItemRepository   = $stockItemRepository;
+        $this->shippingInterface     = $shippingInterface;
+        $this->cart                  = $cart;
+        $this->quoteFactory          = $quoteFactory;
+        $this->configProvider        = $configProvider;
+        $this->quoteIdMaskFactory = $quoteIdMaskFactory;
 
+
+        parent::__construct($context);
+    }
+
+
+    /**
+     * Retrieve checkout configuration
+     *
+     * @return array
+     * @codeCoverageIgnore
+     */
+    public function getCheckoutConfig()
+    {
+        return $this->configProvider->getConfig();
     }
 
     /**
@@ -84,36 +110,68 @@ class updateCart
      */
     public function execute()
     {
+        $replaceBlocks = [];
+        $returnBlocks  = [];
         $resultPage    = $this->_resultPageFactory->create();
         $layout        = $resultPage->getLayout();
         $quote         = $this->checkoutSession->getQuote();
         $requestParams = $this->context->getRequest()->getParams();
 
-        if ($requestParams['actionType'] == 'cart_update') {
-            $this->updateQty($quote, $requestParams['cart']);
+        if (!isset($requestParams['actionType'])) {
+
+            return;
         }
 
-        if ($requestParams['actionType'] == 'cart_clear') {
-            return $this->emptyCart($quote);
-        }
+        switch ($requestParams['actionType']) {
+            case 'cart_update':
 
-        if ($requestParams['actionType'] == 'delete_item') {
-            $this->deleteId($quote, $requestParams['id']);
-        }
+                $this->updateQty($quote, $requestParams['cart']);
+                break;
+            case 'delete_item':
 
-        if ($requestParams['actionType'] == 'shipping_method_update') {
-            $this->updateShipping(
-                $quote,
-                $requestParams['carrier_code'] . '_' . $requestParams['method_code']
-            );
+                $this->deleteId($quote, $requestParams['id']);
+                break;
+            case 'shipping_method_update':
+                $method = ($requestParams['carrier_code'] . '_' . $requestParams['method_code']);
+                    $this->updateShipping($quote, $method);
+                break;
+            case 'update_country':
+                $countryId = $this->context->getRequest()->getParam('country_id');
+                $quote     = $this->replaceQuote($quote);
+
+                $sveaResponse = $this->buildOrder->updateCountry($quote, $countryId);
+
+                $checkoutConfig = \Zend_Json::encode($this->getCheckoutConfig());
+
+                $replaceQuoteJs = "<script>
+                window.checkoutConfig = {$checkoutConfig};
+                window.isCustomerLoggedIn = window.checkoutConfig.isCustomerLoggedIn;
+                window.customerData = window.checkoutConfig.customerData;
+                </script>";
+
+                $returnBlocks['snippet']      = $replaceQuoteJs.$sveaResponse['Gui']['Snippet'];
+                break;
+            case 'cart_clear':
+                return $this->emptyCart($quote);
+                break;
+            default:
+                break;
         }
 
         $this->buildOrder->getOrder($quote);
+
+        foreach($returnBlocks as $name => $content) {
+            $replaceBlocks = [
+                'name' =>    $name,
+                'content' => $content
+            ];
+        }
         $blocks = [
             [
                 'name'    => 'cartBlock',
                 'content' => $this->getCartHtml($layout),
             ],
+            $replaceBlocks
         ];
         $result = $this->jsonFactory->create()->setData(json_encode($blocks));
 
@@ -204,24 +262,58 @@ class updateCart
      * @param \Magento\Quote\Model\Quote $quote,
      * @param $method
      *
-     * @return bool
+     * @return self
      */
-    protected function updateShipping($quote, $method)
+    protected function updateShipping($quote, $method=null)
     {
         $this->quoteRepository->save($quote);
 
         $shippingAddress = $quote->getShippingAddress();
+        if($shippingAddress) {
+            $shippingAddress->setCollectShippingRates(true)
+                ->collectShippingRates()
+                ->setShippingMethod($method)
+                ->save();
 
-        $shippingAddress->setCollectShippingRates(true)
-            ->collectShippingRates()
-            ->setShippingMethod($method)
-            ->save();
-        $quote->beforeSave();
-        $quote->setShippingAddress($shippingAddress)
-            ->save()
-            ->afterSave();
+            $quote->beforeSave();
+            $quote->setShippingAddress($shippingAddress)
+                ->save()
+                ->afterSave();
+        }
 
-        return true;
+        return $this;
+    }
+
+    /**
+     * @param $oldQuote
+     *
+     * @return mixed
+     */
+    protected function replaceQuote($oldQuote)
+    {
+        $quote = $this->quoteFactory->create();
+        $quote->merge($oldQuote)
+            ->setIsActive(1)
+            ->setStoreId($oldQuote->getStoreId())
+            ->setReservedOrderId(null)
+            ->setPaymentReference(null)
+            ->setShippingAddress($oldQuote->getShippingAddress())
+            ->setPaymentReference(null)
+            ->collectTotals();
+
+        $oldQuote->setIsActive(0);
+        $this->quoteRepository->save($oldQuote);
+        $this->quoteRepository->save($quote);
+
+        $this->checkoutSession->replaceQuote($quote)
+            ->unsLastRealOrderId();
+        $this->checkoutSession->setQuoteId($quote->getId());
+        $quoteIdMask = $this->quoteIdMaskFactory->create()->load($quote->getId(), 'quote_id');
+        $quoteIdMask->setQuoteId($quote->getId())->save();
+        //sets Masked quote ID
+        $this->checkoutSession->setIsQuoteMasked(true);
+
+        return $quote;
     }
 
     /**

@@ -12,6 +12,23 @@ $clearStorage = $block->getClearLocalStorage();
     </div>
     <?= $block->getCheckoutHtml() ?>
 </div>
+<style type="text/css">
+    <?php if ($block->getAllowCountrySwitching()): ?>
+    #shipping-zip-form > fieldset > p.note,
+    #shipping-zip-form > fieldset > div[name="shippingAddress\.region"],
+    #shipping-zip-form > fieldset > div[name="shippingAddress\.postcode"] {
+          display: none;
+    }
+
+    #shipping-zip-form > fieldset > div[name="shippingAddress\.country_id"] {
+        display: block;
+    }
+    <?php else: ?>
+    #shipping-zip-form {
+        display: none;
+    }
+    <?php endif; ?>
+</style>
 <script>// <![CDATA[
   require([
     'sveacheckout'

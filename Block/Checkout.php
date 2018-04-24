@@ -55,4 +55,10 @@ class Checkout
 
         return unserialize($this->helper->getStoreConfig($configPath));
     }
+
+    public function getAllowCountrySwitching() {
+        $configPath = 'payment/webbhuset_sveacheckout/enable_international_purchases';
+
+        return $this->helper->getStoreConfig($configPath);
+    }
 }

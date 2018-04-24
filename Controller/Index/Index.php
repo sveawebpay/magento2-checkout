@@ -88,7 +88,7 @@ class Index
     {
         $resultPage = $this->_resultPageFactory->create();
         $active     = $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/active');
-        $paymentInformation = serialize($this->getSettings());
+
         if (!$active) {
 
             return $resultPage;
@@ -97,9 +97,7 @@ class Index
         $block      = $resultPage
             ->getLayout()
             ->getBlock('webbhuset_sveacheckout_Checkout');
-        $quote   = $this->getQuote()->setPaymentInformation($paymentInformation);
-        $payment = $quote->getPayment();
-        $payment->setMethod(\Webbhuset\Sveacheckout\Model\Ui\ConfigProvider::CHECKOUT_CODE);
+        $quote = $this->helper->setPaymentMethod($this->getQuote());
 
         if ($quote->getPaymentReference()) {
             $this->logger->debug(
@@ -134,18 +132,6 @@ class Index
         }
 
         return $resultPage;
-    }
-
-    /**
-     * Get settings details, used to avoid breaking changes.
-     *
-     * @return array
-     */
-    protected function getSettings()
-    {
-        return [
-            'include_options_on_invoice' => $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/include_options_on_invoice')
-        ];
     }
 
     /**

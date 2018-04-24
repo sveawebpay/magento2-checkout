@@ -50,6 +50,7 @@ class Validation
      * @param \Webbhuset\Sveacheckout\Model\Payment\Acknowledge $acknowledge
      * @param \Magento\Sales\Api\OrderManagementInterface       $OrderManagementInterface
      * @param \Magento\Sales\Api\Data\OrderInterface            $orderInterface
+     * @param \Webbhuset\Sveacheckout\Helper\Data               $helper
      */
     public function __construct(
         Context                  $context,
@@ -95,7 +96,6 @@ class Validation
         $this->logger->debug("Validation, queueId `{$queueId}`");
 
         $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
-
         $this->logger->debug("Latest queueId `{$orderQueueItem->getQueueId()}`");
 
         $quoteId        = $orderQueueItem->getQuoteId();
@@ -103,6 +103,7 @@ class Validation
 
         if (!$quoteId) {
             $this->logger->info("Quote not found for queue ID `{$queueId}`");
+
             $resultPage->setHttpResponseCode('203');
 
             return $resultPage;
@@ -122,6 +123,9 @@ class Validation
             return $this->reportAndReturn(204, "Quote {$quoteId} not found");
         }
         $sveaOrder = $this->svea->getOrder($quote);
+        if (!$quote->getPayment()->getMethod()) {
+            $quote = $this->helper->setPaymentMethod($quote);
+        }
 
         if (!$sveaOrder) {
             return $this->reportAndReturn(
@@ -163,6 +167,7 @@ class Validation
             $this->logger->info("Creating Magento order for quote `{$quote->getId()}`");
             $orderId = $this->createOrder->createOrder($quote, $orderQueueItem, $sveaOrder, $responseObject);
             if (!$orderId) {
+
                 return $this->reportAndReturn(203, $this->getResponse()->getHttpResponseCode());
             }
         }

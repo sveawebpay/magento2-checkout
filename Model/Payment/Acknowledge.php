@@ -70,7 +70,6 @@ class Acknowledge
             $order->setCustomerEmail($sveaData['EmailAddress']);
         }
 
-
         try {
             $this->orderService->notify($orderId);
         } catch (\Exception $e) {

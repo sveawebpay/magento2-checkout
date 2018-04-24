@@ -124,6 +124,7 @@ class CreateOrder
         $billingAddress  = $data['BillingAddress'];
         $shippingAddress = $data['ShippingAddress'];
         $customer        = $data['Customer'];
+        $countryCode     = $customer['CountryCode'];
 
         $reference = (isset($customer['CustomerReference']) && !empty($customer['CustomerReference']))
                    ? $customer['CustomerReference']
@@ -160,6 +161,14 @@ class CreateOrder
             ]
         );
 
+        if (isset($billingAddress['AddressLines'])) {
+            $street = implode(
+                "\n",
+                $billingAddress['AddressLines']
+            );
+
+        }
+
         $street  = ($street) ? $street : $notNull;
         $city    = $billingAddress['City'];
         $city    = $city ? $city : $notNull;
@@ -168,7 +177,7 @@ class CreateOrder
         $phone   = $data['PhoneNumber'];
         $phone   = ($phone) ? $phone : $notNull;
         $country = strtoupper($billingAddress['CountryCode']);
-        $country = ($country) ? $country : $notNull;
+        $country = ($country) ? $country : $countryCode;
 
         $billingAddressData = [
             'firstname'      => $billingFirstname,
@@ -204,6 +213,14 @@ class CreateOrder
             ]
         );
 
+        if (isset($shippingAddress['AddressLines'])) {
+            $street = implode(
+                "\n",
+                $shippingAddress['AddressLines']
+            );
+
+        }
+
         $street  = ($street) ? $street : $notNull;
         $city    = $shippingAddress['City'];
         $city    = $city ? $city : $notNull;
@@ -212,7 +229,7 @@ class CreateOrder
         $phone   = $data['PhoneNumber'];
         $phone   = ($phone) ? $phone : $notNull;
         $country = strtoupper($shippingAddress['CountryCode']);
-        $country = ($country) ? $country : $notNull;
+        $country = ($country) ? $country : $countryCode;
 
         $shippingAddressData = [
             'firstname'      => $shippingFirstname,

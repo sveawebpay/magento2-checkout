@@ -151,9 +151,28 @@
                         showInWebsite="1"
                         showInStore="1"
                 >
-                    <label>Locale</label>
+                    <label>Locale
+                        &lt;br /&gt;
+                        &lt;small&gt;
+                        &lt;i&gt;Should match default country setting in
+                        Store-&gt;Configuration-&gt;->General-&gt;Default Country.&lt;/i&gt;
+                        &lt;small&gt;
+                    </label>
                     <source_model>Webbhuset\Sveacheckout\Model\Config\Source\Locale</source_model>
                     <can_be_empty>1</can_be_empty>
+                </field>
+                <field
+                        id="enable_international_purchases"
+                        translate="label"
+                        type="select"
+                        sortOrder="151"
+                        showInDefault="1"
+                        showInWebsite="1"
+                        showInStore="1"
+                >
+                    <label>Enable switching destination country in checkout</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <can_be_empty>0</can_be_empty>
                 </field>
                 <field
                     id="include_options_on_invoice"

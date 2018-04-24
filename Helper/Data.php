@@ -84,6 +84,18 @@ class Data
         return $this->urlBuilder->getUrl($path, $params);
     }
 
+    public function setPaymentMethod($quote)
+    {
+        $configPath         = 'payment/webbhuset_sveacheckout/include_options_on_invoice';
+        $paymentInformation = ['include_options_on_invoice' => $this->getStoreConfig($configPath)];
+        $paymentInformation = serialize($paymentInformation);
+        $quote   = $quote->setPaymentInformation($paymentInformation);
+        $payment = $quote->getPayment();
+        $payment->setMethod(\Webbhuset\Sveacheckout\Model\Ui\ConfigProvider::CHECKOUT_CODE);
+
+        return $quote;
+    }
+
     /**
      * Compare the current quote to Sveas order.
      *
