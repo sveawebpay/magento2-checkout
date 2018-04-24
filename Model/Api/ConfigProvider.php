@@ -2,7 +2,7 @@
 
 namespace Webbhuset\Sveacheckout\Model\Api;
 
-use Svea\Checkout\transport\Connector;
+use Svea\Checkout\Transport\Connector;
 use Svea\WebPay\Config\ConfigurationProvider;
 use Webbhuset\Sveacheckout\Helper\Data as helper;
 use Magento\Framework\App\State as appState;
