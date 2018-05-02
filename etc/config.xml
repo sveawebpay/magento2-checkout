@@ -7,7 +7,7 @@
         <payment>
             <webbhuset_sveacheckout>
                 <debug>0</debug>
-                <active>1</active>
+                <active>0</active>
                 <model>SveaCheckoutFacade</model>
                 <order_status>pending</order_status>
                 <title>Svea Ekonomi Checkout</title>
@@ -29,9 +29,9 @@
                 <merchant_id backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <shared_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <is_gateway>1</is_gateway>
-                <allowed_customers>false</allowed_customers>
-                <override_terms_url>false</override_terms_url>
-                <enable_international_purchases>false</enable_international_purchases>
+                <allowed_customers>0</allowed_customers>
+                <override_terms_url>0</override_terms_url>
+                <enable_international_purchases>0</enable_international_purchases>
             </webbhuset_sveacheckout>
         </payment>
     </default>
