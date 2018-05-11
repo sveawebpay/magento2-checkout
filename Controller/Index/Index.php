@@ -185,7 +185,7 @@ class Index
     protected function _restoreQuote($quoteId)
     {
         $entityIdFilter = $this->searchCriteriaBuilder
-            ->addFilter('entity_id', $quoteId)
+            ->addFilter('main_table.entity_id', $quoteId)
             ->create();
         $oldQuote    = $this->quoteRepository->getList($entityIdFilter)->getItems();
 
