@@ -161,12 +161,11 @@ class CreateOrder
             ]
         );
 
-        if (isset($billingAddress['AddressLines'])) {
+        if (isset($billingAddress['AddressLines']) && count($billingAddress['AddressLines'])) {
             $street = implode(
                 "\n",
                 $billingAddress['AddressLines']
             );
-
         }
 
         $street  = ($street) ? $street : $notNull;
@@ -213,12 +212,11 @@ class CreateOrder
             ]
         );
 
-        if (isset($shippingAddress['AddressLines'])) {
+        if (isset($shippingAddress['AddressLines']) && count($shippingAddress['AddressLines'])) {
             $street = implode(
                 "\n",
                 $shippingAddress['AddressLines']
             );
-
         }
 
         $street  = ($street) ? $street : $notNull;
