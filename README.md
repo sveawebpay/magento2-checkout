@@ -16,7 +16,7 @@ please contact Support-Webpay@sveaekonomi.se if you're unsure if you're whitelis
 *Installation:*
 
 run `composer require sveaekonomi/magento2-checkout && composer install` to install files.
-Then run `bin/magento setup:db:upgrade && bin/magento setup:ci:compile && bin/magento cache:flush` from your base folder 
+Then run `bin/magento setup:upgrade && bin/magento setup:di:compile && bin/magento cache:flush` from your base folder 
 to install database scripts and recompile the dependency injections and clear cache.
 
 Head to _administration -> Stores -> Configuration -> Payment methods -> Svea Ekonomi Checkout_
