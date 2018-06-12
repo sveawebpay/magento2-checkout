@@ -602,16 +602,17 @@ class SveaCommand implements
                         ->setAmountIncVat((float)$refundAmount)
                         ->creditCheckoutAmount()
                         ->doRequest();
-
                 }
             }
             $sveaOrder = $this->getCheckoutOrder($order);
 
-            return json_decode(json_encode($sveaOrder), false);
+            if (isset($refundAmount)) {
+                return json_decode(json_encode($sveaOrder), false);
+            }
         }
 
         if (isset($deliveryKey)) {
-            $tmpRefundItems[$sveaOrder['Deliveries'][$deliveryKey]['Id']] = $this->_getActionRows(
+            $tmpRefundItems[$sveaOrder['Deliveries'][$deliveryKey]['Id']] = $this->getActionRows(
                 $creditMemoItems,
                 $sveaOrder['Deliveries'][$deliveryKey]['OrderRows'],
                 $shippingMethod,
@@ -620,7 +621,7 @@ class SveaCommand implements
             );
         } else {
             foreach ($sveaOrder['Deliveries'] as $deliveries) {
-                $tmpRefundItems[$deliveries['Id']] = $this->_getActionRows(
+                $tmpRefundItems[$deliveries['Id']] = $this->getActionRows(
                     $creditMemoItems,
                     $deliveries['OrderRows'],
                     $shippingMethod,
