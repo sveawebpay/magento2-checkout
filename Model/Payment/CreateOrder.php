@@ -168,7 +168,7 @@ class CreateOrder
             );
         }
 
-        $street  = ($street) ? $street : $notNull;
+        $street  = (trim($street)) ? $street : $notNull;
         $city    = $billingAddress['City'];
         $city    = $city ? $city : $notNull;
         $zip     = $billingAddress['PostalCode'];
@@ -219,7 +219,7 @@ class CreateOrder
             );
         }
 
-        $street  = ($street) ? $street : $notNull;
+        $street  = (trim($street)) ? $street : $notNull;
         $city    = $shippingAddress['City'];
         $city    = $city ? $city : $notNull;
         $zip     = $shippingAddress['PostalCode'];
