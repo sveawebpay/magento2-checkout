@@ -10,6 +10,7 @@ use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
 use Webbhuset\Sveacheckout\Model\Queue as queueModel;
 use Magento\Sales\Model\ResourceModel\Order\Collection  as  orderCollection;
 use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 /**
  * Class Success.
@@ -29,26 +30,29 @@ class Success
     protected $quoteRepository;
     protected $orderCollection;
     protected $queue;
+    protected $cipher;
 
     /**
      * Success constructor.
      *
-     * @param \Magento\Framework\App\Action\Context        $context
-     * @param \Magento\Framework\View\Result\PageFactory   $resultPageFactory
-     * @param \Magento\Checkout\Model\Session              $session
-     * @param \Webbhuset\Sveacheckout\Model\Api\BuildOrder $buildOrder
-     * @param \Magento\Quote\Model\QuoteRepository         $quoteRepository
-     * @param \Webbhuset\Sveacheckout\Model\Logger\Logger  $logger
+     * @param \Magento\Framework\App\Action\Context            $context
+     * @param \Magento\Framework\View\Result\PageFactory       $resultPageFactory
+     * @param \Magento\Checkout\Model\Session                  $session
+     * @param \Webbhuset\Sveacheckout\Model\Api\BuildOrder     $buildOrder
+     * @param \Magento\Quote\Model\QuoteRepository             $quoteRepository
+     * @param \Webbhuset\Sveacheckout\Model\Logger\Logger      $logger
+     * @param \Magento\Framework\Encryption\EncryptorInterface $cipher
      */
     public function __construct(
-        Context         $context,
-        PageFactory     $resultPageFactory,
-        checkoutSession $session,
-        BuildOrder      $buildOrder,
-        QuoteRepository $quoteRepository,
-        queueModel      $queueModel,
-        orderCollection $orderCollection,
-        Logger          $logger
+        Context            $context,
+        PageFactory        $resultPageFactory,
+        checkoutSession    $session,
+        BuildOrder         $buildOrder,
+        QuoteRepository    $quoteRepository,
+        queueModel         $queueModel,
+        orderCollection    $orderCollection,
+        Logger             $logger,
+        EncryptorInterface $cipher
     )
     {
         $this->resultPageFactory = $resultPageFactory;
@@ -59,6 +63,7 @@ class Success
         $this->queue             = $queueModel;
         $this->orderCollection   = $orderCollection;
         $this->logger            = $logger;
+        $this->cipher            = $cipher;
         parent::__construct($context);
     }
 
@@ -75,7 +80,8 @@ class Success
             ->getLayout()
             ->getBlock('webbhuset_sveacheckout_Checkout');
 
-        $queueId        = $this->context->getRequest()->getParam('queueId');
+        $rawQueueId     = $this->context->getRequest()->getParam('queueId');
+        $queueId        = $this->cipher->decrypt($rawQueueId);
         $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
         $quoteId        = $orderQueueItem->getQuoteId();
 

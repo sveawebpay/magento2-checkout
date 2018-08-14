@@ -2,6 +2,7 @@
 
 namespace Webbhuset\Sveacheckout\Model\Api;
 
+use Magento\Config\Model\Config\Backend\Encrypted;
 use Svea\WebPay\WebPay;
 use Svea\WebPay\WebPayItem;
 use Webbhuset\Sveacheckout\Helper\Data as helper;
@@ -17,6 +18,7 @@ use Webbhuset\Sveacheckout\Model\Queue as queueModel;
 use Webbhuset\Sveacheckout\Model\QueueFactory as queueModelFactory;
 use Magento\Quote\Model\QuoteFactory;
 use Webbhuset\Sveacheckout\Api\QueueRepositoryInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 /**
  * Class BuildOrder
@@ -40,6 +42,7 @@ class BuildOrder
     protected $quoteRepository;
     protected $queueFactory;
     protected $quoteFactory;
+    protected $cipher;
 
     /**
      * BuildOrder constructor.
@@ -57,6 +60,7 @@ class BuildOrder
      * @param \Magento\Quote\Api\CartRepositoryInterface              $quoteRepository
      * @param \Webbhuset\Sveacheckout\Model\QueueFactory              $queueFactory
      * @param \Magento\Quote\Model\QuoteFactory                       $quoteFactory
+     * @param \Magento\Framework\Encryption\EncryptorInterface        $cipher
      */
     public function __construct(
         helper                            $helper,
@@ -71,7 +75,8 @@ class BuildOrder
         ShippingMethodManagementInterface $shippingMethodManager,
         CartRepositoryInterface           $quoteRepository,
         queueModelFactory                 $queueFactory,
-        QuoteFactory                      $quoteFactory
+        QuoteFactory                      $quoteFactory,
+        EncryptorInterface                $cipher
     )
     {
         $this->auth                    = $auth;
@@ -87,6 +92,7 @@ class BuildOrder
         $this->quoteRepository         = $quoteRepository;
         $this->queueFactory            = $queueFactory;
         $this->quoteFactory            = $quoteFactory;
+        $this->cipher                  = $cipher;
     }
 
     /**
@@ -473,6 +479,8 @@ class BuildOrder
         }
 
         $restoreParams = array_merge($pushParams, ['reactivate' => 'true']);
+        $successParams = $pushParams;
+        $successParams['queueId'] = $this->cipher->encrypt($pushParams['queueId']);
 
         $termsUri = $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/override_terms_url')
                   ? $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/terms_url')
@@ -481,7 +489,7 @@ class BuildOrder
         $buildOrder->setClientOrderNumber($clientId)
                    ->setCheckoutUri($this->helper->getUrl('sveacheckout/Index/index', $restoreParams))
                    ->setValidationCallbackUri($validationUri)
-                   ->setConfirmationUri($this->helper->getUrl('sveacheckout/Index/success', $pushParams))
+                   ->setConfirmationUri($this->helper->getUrl('sveacheckout/Index/success', $successParams))
                    ->setPushUri($pushUri)
                    ->setTermsUri($termsUri);
 
