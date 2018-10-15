@@ -33,6 +33,7 @@ class Observer
                 $order->setData($attribute, $quote->getData($attribute));
             }
         }
+        $order->setCanSendNewEmailFlag(false);
 
         return $this;
     }
