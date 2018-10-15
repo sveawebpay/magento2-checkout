@@ -104,7 +104,7 @@ class Queue
     public function getByQuoteId($quoteId)
     {
         $queue = $this->getResourceCollection()
-                      ->addFilter('quote_id', $quoteId, 'and')
+                      ->addFieldToFilter('quote_id', ['eq' => $quoteId])
                       ->getFirstItem();
 
         if (!$queue->getQueueId()) {
@@ -127,8 +127,15 @@ class Queue
         $queue = $this->getResourceCollection()
             ->addFilter('queue_id', $queueId)
             ->getFirstItem();
-
         $paymentReference = $queue->getPaymentReference();
+
+        if (!$paymentReference) {
+            $queue = $this->getResourceCollection()
+                ->addFieldToFilter('quote_id', $queue->getQuoteId())
+                ->addFieldToFilter('payment_reference', ['notnull' => true])
+                ->getFirstItem();
+            $paymentReference = $queue->getPaymentReference();
+        }
 
         $newest = $this->getResourceCollection()
             ->setOrder('queue_id', 'DESC')

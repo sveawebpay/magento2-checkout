@@ -91,6 +91,7 @@ class Success
             $quote = $this->quoteRepository->get($quoteId);
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
             $this->logger->error("Quote `{$quoteId}` not found.");
+
             return $resultPage;
         }
 

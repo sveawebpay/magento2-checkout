@@ -270,10 +270,18 @@ class BuildOrder
      *
      * @return \Webbhuset\Sveacheckout\Model\Queue
      */
-    protected function createQueueItem($quote)
+    public function createQueueItem($quote)
     {
         $queueItem = $this->queueFactory->create();
 
+        $queueItem = $queueItem->getResourceCollection()
+            ->addFieldToFilter('quote_id', ['eq'=>$quote->getId()])
+            ->addFieldToFilter('state', ['eq'=>queueModel::SVEA_QUEUE_STATE_INIT])
+            ->getFirstItem();
+
+        if ($queueItem->getId()) {
+            return $queueItem->setData('payment_reference', $quote->getPaymentReference())->save();
+        }
         $queueItem
             ->setData([
                 'payment_reference' => $quote->getPaymentReference(),
@@ -448,6 +456,7 @@ class BuildOrder
             : 'prod';
 
         $queueItem = $this->getQueueItem($quote);
+
         $pushParams = [
             'queueId' => $queueItem->getData('queue_id'),
             'mode'    => $mode,

@@ -13,6 +13,7 @@ use Magento\Quote\Model\QuoteFactory;
 use Webbhuset\Sveacheckout\Model\QueueFactory;
 use Webbhuset\Sveacheckout\Helper\Data as helper;
 use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
+use Webbhuset\Sveacheckout\Model\QueueRepository;
 
 /**
  * Class Index
@@ -33,6 +34,7 @@ class Index
     protected $quoteRepository;
     protected $searchCriteriaBuilder;
     protected $queueFactory;
+    protected $queueRepository;
     protected $helper;
 
     /**
@@ -58,6 +60,7 @@ class Index
         QuoteRepository          $quoteRepository,
         QuoteFactory             $quoteFactory,
         QueueFactory             $queueFactory,
+        QueueRepository          $queueRepository,
         Logger                   $logger,
         helper                   $helper
     )
@@ -71,6 +74,7 @@ class Index
         $this->quoteRepository       = $quoteRepository;
         $this->quoteFactory          = $quoteFactory;
         $this->queueFactory          = $queueFactory;
+        $this->queueRepository       = $queueRepository;
         $this->logger                = $logger;
         $this->helper          = $helper;
 
@@ -105,8 +109,29 @@ class Index
                 ref `{$quote->getPaymentReference()}`"
             );
 
-
             $response = $this->buildOrder->getOrder($quote);
+            if (isset($response['MerchantSettings']['CheckoutValidationCallBackUri'])) {
+                $validationUri  = $response['MerchantSettings']['CheckoutValidationCallBackUri'];
+                preg_match('/queueId\/(.+)\/mode/', $validationUri, $validationUri);
+
+                try {
+                    $queueItem = $this->queueRepository->getById($validationUri[1]);
+                    $queueItem->setPaymentReference($response['OrderId'])->save();
+                } catch(\Magento\Framework\Exception\NoSuchEntityException $e) {
+                    $queueItem = $this->buildOrder->createQueueItem($quote);
+                    $queueItem->setPaymentReference($response['OrderId'])->save();
+                }
+
+                if (isset($validationUri[1]) &&
+                    $validationUri[1] != $queueItem->getQueueId()
+                    || $queueItem->getQuoteId() != $quote->getId()
+                ) {
+                    $quote->setIsActive(false)->save();
+                    $quote = $this->replaceQuote($quote);
+                    $queueItem->setData('quote_id', $quote->getId())->save();
+                    $this->_redirect('sveacheckout/index/index');
+                }
+            }
         } else {
             $this->logger->debug("Creating new Svea order for quote `{$quote->getId()}`");
             $response = $this->buildOrder->createOrder($quote);
@@ -196,6 +221,15 @@ class Index
 
             $oldQuote = reset($oldQuote);
         }
+
+        $quote = $this->replaceQuote($oldQuote);
+
+        $this->_redirect('sveacheckout/index/index');
+        return $quote;
+    }
+
+    protected function replaceQuote($oldQuote)
+    {
         $quote = $this->quoteFactory->create();
         $quote->merge($oldQuote)
             ->setIsActive(1)
@@ -220,7 +254,6 @@ class Index
         $this->checkoutSession->replaceQuote($quote)
             ->unsLastRealOrderId();
 
-        $this->_redirect('sveacheckout/index/index');
         return $quote;
     }
 

@@ -83,6 +83,7 @@ class QueueRepository
         $queue = $this->queueFactory->create();
 
         $queue->getResource()->load($queue, $queueId);
+
         if (!$queue->getId()) {
             throw new NoSuchEntityException(__('Unable to find Queue item with ID "%1"', $queueId));
         }
