@@ -167,6 +167,9 @@ class Data
         $errors = [];
         foreach ($quoteItems as $num => $row) {
             foreach ($fieldMapper as $keyInQuote => $keyInSvea) {
+               if(is_float($row[$keyInQuote]) && 'UnitPrice' == $keyInSvea) {
+                    $row[$keyInQuote] = round($row[$keyInQuote],2);
+                }
                 if ($row[$keyInQuote] != $sveaOrderItems[$num][$keyInSvea]) {
                     $errors[] .= '$row[' . $keyInQuote . '] != $sveaOrderItems[' . $num . '][' . $keyInSvea . ']';
                     $errors[] .= $row[$keyInQuote] . '!=' . $sveaOrderItems[$num][$keyInSvea];
