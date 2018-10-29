@@ -19,7 +19,7 @@ class Adapter
         switch ($transactionData['reservation']['PaymentType'])
         {
             case 'SVEACARDPAY':
-                return false;
+                return parent::canCapturePartial();
             default:
                 return parent::canCapturePartial();
         }
@@ -42,8 +42,6 @@ class Adapter
 
         switch ($transactionData['reservation']['PaymentType'])
         {
-            case 'SVEACARDPAY':
-                return false;
             default:
                 return parent::canRefundPartialPerInvoice();
         }
