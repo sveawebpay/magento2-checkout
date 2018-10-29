@@ -166,6 +166,7 @@ class SveaCommand implements
 
         if ($shippingAmount > 0 && !$payment->getPayment()->getShippingCaptured()) {
             $shippingMethod = $order->getShippingDescription();
+            $shippingMethod = mb_substr($shippingMethod, 0, 40);
         }
 
         $invoiceIncrementId = $this->eavConfig
@@ -547,6 +548,7 @@ class SveaCommand implements
 
         if ($shippingCredit > 0 && ($shippingCredit == $shippingAmount)) {
             $shippingMethod = $order->getShippingDescription();
+            $shippingMethod = mb_substr($shippingMethod, 0, 40);
         }
 
         foreach ($sveaOrder['Deliveries'] as $key => $deliveries) {
