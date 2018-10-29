@@ -8,8 +8,6 @@ use Magento\Store\Model\StoreManager;
 
 class Data
 {
-    const ERR_100 = 'Size of Quote differ from Svea';
-
     private $context;
     private $urlBuilder;
     private $storeManager;
@@ -106,11 +104,6 @@ class Data
      */
     public function compareQuoteToSveaOrder($quoteItems, $sveaOrderItems)
     {
-        if (sizeof($quoteItems) !== sizeof($sveaOrderItems)) {
-
-            return ['error' => __($this::ERR_100)];
-        }
-
         foreach ($quoteItems as $key => $quoteItem) {
             if (!array_key_exists('articleNumber', $quoteItem)) {
                 $quoteItems[$key]['articleNumber'] = null;
