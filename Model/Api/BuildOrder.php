@@ -489,7 +489,7 @@ class BuildOrder
 
         $restoreParams = array_merge($pushParams, ['reactivate' => 'true']);
         $successParams = $pushParams;
-        $successParams['queueId'] = $this->cipher->encrypt($pushParams['queueId']);
+        $successParams['queueId'] = urlencode($this->cipher->encrypt($pushParams['queueId']));
 
         $termsUri = $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/override_terms_url')
                   ? $this->helper->getStoreConfig('payment/webbhuset_sveacheckout/terms_url')

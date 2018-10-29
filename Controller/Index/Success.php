@@ -82,6 +82,9 @@ class Success
 
         $rawQueueId     = $this->context->getRequest()->getParam('queueId');
         $queueId        = $this->cipher->decrypt($rawQueueId);
+        if (!is_numeric($queueId)) {
+            $queueId        = $this->cipher->decrypt(urldecode($rawQueueId));
+        }
         $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
         $quoteId        = $orderQueueItem->getQuoteId();
 
