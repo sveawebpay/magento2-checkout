@@ -4,7 +4,7 @@ $additional = $info['info']['additional_information'];
 $title      = $additional['method_title'];
 
 if (isset($additional['OrderId'])) {
-    $mode              = ('live' == $additional['mode'])
+    $mode              = ('prod' == $additional['mode'])
                        ? '<span style="color: green; font-weight: bold">LIVE</span>'
                        : '<span style="color: red;   font-weight: bold">TEST</span>';
     $willBuy           = $additional['SveaWillBuyOrder'];
@@ -13,7 +13,7 @@ if (isset($additional['OrderId'])) {
     $orderId           = $additional['OrderId'];
     $customerReference = $additional['CustomerReference'];
 } elseif (isset($additional['reservation']['OrderId'])) {
-    $mode               = ('live' == $additional['sveacheckout']['mode'])
+    $mode               = ('prod' == $additional['sveacheckout']['mode'])
                         ? '<span style="color: green; font-weight: bold">LIVE</span>'
                         : '<span style="color: red;   font-weight: bold">TEST</span>';
     $willBuy            = $additional['reservation']['SveaWillBuyOrder'];
