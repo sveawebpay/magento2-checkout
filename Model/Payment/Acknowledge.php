@@ -10,6 +10,7 @@ use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface as scope;
 use Magento\Sales\Model\Service\OrderService as orderService;
 use Magento\Sales\Model\Order\Status;
+use Magento\Sales\Model\Order\Address;
 
 /**
  * Class Acknowledge
@@ -24,6 +25,7 @@ class Acknowledge
     protected $scopeConfig;
     protected $transactionHelper;
     protected $orderService;
+    protected $address;
 
     /**
      * Acknowledge constructor.
@@ -39,7 +41,8 @@ class Acknowledge
         scope             $scopeConfig,
         transactionHelper $transactionHelper,
         orderService      $orderService,
-        Status            $status
+        Status            $status,
+        Address           $address
     )
     {
         $this->orderRepository   = $orderRepository;
@@ -47,6 +50,7 @@ class Acknowledge
         $this->transactionHelper = $transactionHelper;
         $this->orderService      = $orderService;
         $this->status            = $status;
+        $this->address           = $address;
     }
 
     /**
@@ -68,6 +72,21 @@ class Acknowledge
             && !empty($sveaData['EmailAddress'])
         ) {
             $order->setCustomerEmail($sveaData['EmailAddress']);
+        }
+
+        if (
+            isset($sveaData['CustomerReference'])
+            && !empty($sveaData['CustomerReference'])
+            && isset($sveaData['Customer']['IsCompany'])
+            && $sveaData['Customer']['IsCompany']
+        ) {
+            $order->setCustomerFirstname($sveaData['CustomerReference']);
+            $addressCollection = $this->address->getCollection()->addFieldToFilter(
+                'parent_id',
+                ['eq' => $order->getEntityId()]);
+            foreach ($addressCollection as $orderAddress) {
+                $orderAddress->setFirstname($sveaData['CustomerReference'])->save();
+            }
         }
 
         try {

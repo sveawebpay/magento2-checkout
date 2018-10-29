@@ -118,6 +118,7 @@ class CreateOrder
     {
         //ZeroWidthSpace
         $notNull = html_entity_decode('&#8203;');
+        $reference       = $notNull;
 
         $email           = $data['EmailAddress'];
         $email           = ($email) ? $email : 'missing-email@example.com';
@@ -125,33 +126,34 @@ class CreateOrder
         $shippingAddress = $data['ShippingAddress'];
         $customer        = $data['Customer'];
         $countryCode     = $customer['CountryCode'];
+        $whitespaces     = " \t\n\r\0\x0B".html_entity_decode('&#8203;');
 
         $reference = (isset($customer['CustomerReference']) && !empty($customer['CustomerReference']))
-                   ? $customer['CustomerReference']
-                   : false;
-        $reference = (!$reference && isset($data['CustomerReference']) && !empty($data['CustomerReference']))
-                   ? $data['CustomerReference']
-                   : false;
+            ? $customer['CustomerReference'] : $reference;
+
+        $reference = (isset($data['CustomerReference']) && !empty($data['CustomerReference']))
+            ? $data['CustomerReference'] : $reference;
+
 
         $billingFirstname = ($billingAddress['FirstName'])
-                          ? $billingAddress['FirstName']
-                          : $billingAddress['FullName'];
+            ? $billingAddress['FirstName']
+            : $billingAddress['FullName'];
 
         $billingFirstname = ($billingFirstname)
-                          ? $billingFirstname
-                          : $notNull;
+            ? $billingFirstname
+            : $notNull;
 
         if ($customer['IsCompany'] == true) {
             $billingCompany   = $billingAddress['FullName'];
             $shippingCompany  = $shippingAddress['FullName'];
-            $billingFirstname = ($reference)
+            $billingFirstname = !empty(trim($reference,$whitespaces))
                               ? $reference
-                              : $notNull;
+                              : $billingFirstname;
         }
 
         $billingLastname = ($billingAddress['LastName'])
-                         ? $billingAddress['LastName']
-                         : $notNull;
+            ? $billingAddress['LastName']
+            : $notNull;
 
         $street = implode(
             "\n",
@@ -189,20 +191,24 @@ class CreateOrder
             'payment_method' => 'checkmo',
         ];
 
-        if (true == $customer['IsCompany'] && $reference) {
-            $shippingFirstname = $reference;
-        } else {
-            $shippingFirstname = ($shippingAddress['FirstName'])
-                ? $shippingAddress['FirstName']
-                : $shippingAddress['FullName'];
-        }
+        $shippingFirstname = ($shippingAddress['FirstName'])
+            ? $shippingAddress['FirstName']
+            : $shippingAddress['FullName'];
+
         $shippingFirstname = ($shippingFirstname)
-                           ? $shippingFirstname
-                           : $notNull;
+            ? $shippingFirstname
+            : $notNull;
+
+        if ($customer['IsCompany'] == true) {
+            $shippingFirstname = !empty(trim($reference,$whitespaces))
+                               ? $reference
+                               : $shippingFirstname;
+            $shippingCompany  = $shippingAddress['FullName'];
+        }
 
         $shippingLastname  = $shippingAddress['LastName']
-                           ? $shippingAddress['LastName']
-                           : $notNull;
+            ? $shippingAddress['LastName']
+            : $notNull;
 
         $street = implode(
             "\n",
