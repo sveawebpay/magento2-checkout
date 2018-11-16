@@ -106,7 +106,7 @@ class Data
     {
         foreach ($quoteItems as $key => $quoteItem) {
             if (!array_key_exists('articleNumber', $quoteItem)) {
-                $quoteItems[$key]['articleNumber'] = null;
+                $quoteItems[$key]['articleNumber'] = '';
             }
             if (!array_key_exists('quantity', $quoteItem)) {
                 $quoteItems[$key]['quantity'] = 1;
@@ -125,7 +125,7 @@ class Data
         foreach ($sveaOrderItems as $key => $sveaOrderItem) {
 
             if (!array_key_exists('ArticleNumber', $sveaOrderItem)) {
-                $sveaOrderItems[$key]['ArticleNumber'] = null;
+                $sveaOrderItems[$key]['ArticleNumber'] = '';
             }
             if (!array_key_exists('Quantity', $sveaOrderItem)) {
                 $quoteItems[$key]['Quantity'] = 1;
@@ -163,6 +163,19 @@ class Data
                if(is_float($row[$keyInQuote]) && 'UnitPrice' == $keyInSvea) {
                     $row[$keyInQuote] = round($row[$keyInQuote],2);
                 }
+
+                if (!isset($sveaOrderItems[$num])) {
+                   $errors[] .= json_encode($quoteItems[$num]) .' missing from Svea order';
+
+                   continue;
+                }
+
+                if (isset($sveaOrderItems[$num]) && !array_key_exists($keyInSvea, $sveaOrderItems[$num])) {
+                   $errors[] .= $keyInSvea.' missing from '. json_encode($sveaOrderItems[$num]);
+
+                   continue;
+                }
+
                 if ($row[$keyInQuote] != $sveaOrderItems[$num][$keyInSvea]) {
                     $errors[] .= '$row[' . $keyInQuote . '] != $sveaOrderItems[' . $num . '][' . $keyInSvea . ']';
                     $errors[] .= $row[$keyInQuote] . '!=' . $sveaOrderItems[$num][$keyInSvea];
