@@ -1,12 +1,5 @@
 Svea checkout for Magento2
 
-Important!
-
-Your domain needs to be whitelisted in order to use the module,
-
-please contact Support-Webpay@sveaekonomi.se if you're unsure if you're whitelisted.
-
-
 * Requirements (inherited from dependencies)*
 * Magento 2.1.4 or above
 * PHP 5.6 >=
