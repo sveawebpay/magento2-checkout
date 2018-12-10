@@ -388,12 +388,16 @@ class BuildOrder
             $buildOrder->addOrderRow($orderRowItem);
 
             if ((float)$item->getDiscountAmount()) {
+
                 if ($this->helper->getStoreConfig('tax/calculation/discount_tax')) {
                     $discountAmountIncVat = $item->getDiscountAmount();
                 } else {
                     $taxCalculation = 1 + $item->getTaxPercent() / 100;
                     $discountAmountIncVat = $item->getDiscountAmount()* $taxCalculation;
+                    //Svea allows only two decimals, round.
+                    $discountAmountIncVat = round($discountAmountIncVat, 2);
                 }
+
                 $itemRowDiscount = WebPayItem::fixedDiscount()
                     ->setName(mb_substr(sprintf('discount-%s', $prefix . $item->getId()), 0, 40))
                     ->setVatPercent((int)round($item->getTaxPercent()))
