@@ -665,7 +665,7 @@ class BuildOrder
         $fakeOrder = json_decode(json_encode($fakeOrder), true);
 
         $diff = $this->_diffOrderRows($fakeOrder['rows'], $response['Cart']['Items']);
-        if (sizeof($diff['error'])) {
+        if (isset($diff['error']) && sizeof($diff['error'])) {
             $this->logger->warning("sveaOrderHasErrors diff error, attempt {$tries}", ['error' => $diff['error']]);
             if (isset($response['Status']) && $response['Status'] != 'Created') {
                 $this->logger->warning("sveaOrderHasErrors - incorrect order status `{$response['Status']}`");
