@@ -28,6 +28,11 @@ class Observer
         $order = $observer->getEvent()->getData('order');
         $quote = $observer->getEvent()->getData('quote');
 
+        if ('webbhuset_sveacheckout' != $order->getPayment()->getMethod()) {
+
+            return $this;
+        }
+
         foreach ($this->attributes as $attribute) {
             if ($quote->hasData($attribute)) {
                 $order->setData($attribute, $quote->getData($attribute));
