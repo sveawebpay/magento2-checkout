@@ -10,7 +10,6 @@ require([
   'Magento_Checkout/js/model/shipping-service'
 ], function ($, getTotals, quote, shippingEstimation, checkoutData, addressConverter, customerData) {
 
-
   var addressData = {'countryId': sveacheckout.country};
   checkoutData.setShippingAddressFromData(addressData);
 
@@ -122,6 +121,7 @@ require([
     if ('scoApi' in window) {
       window.scoApi.setCheckoutEnabled(false);
     }
+
     // submit form
     $.ajax({
       type: 'POST',
@@ -167,14 +167,29 @@ require([
     });
   }
 
-
   /**
    * Observe the validationresult, check for last error message, if found display it.
    */
-  // Update checkout window
   if ('scoApi' in window) {
-    window.scoApi.observeModel('validation.result', function() {
+    window.scoApi.observeEvent('validation.result', function() {
       window.scoApi.setCheckoutEnabled(true);
     });
   }
+
+  function observeEvents($) {
+    if ('scoApi' in window) {
+      window.scoApi.observeEvent("identity.postalCode", function (data) {
+        $('#shipping-zip-form [name="postcode"]').val(data.value);
+        $('#shipping-zip-form [name="postcode"]').trigger('change', this);
+      });
+    } else {
+      setTimeout(setupObservers, 500, $);
+    }
+  }
+
+  function setupObservers($) {
+    observeEvents($);
+  }
+
+  setupObservers($);
 });

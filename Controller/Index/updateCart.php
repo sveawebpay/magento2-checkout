@@ -84,7 +84,7 @@ class updateCart
         $this->cart                  = $cart;
         $this->quoteFactory          = $quoteFactory;
         $this->configProvider        = $configProvider;
-        $this->quoteIdMaskFactory = $quoteIdMaskFactory;
+        $this->quoteIdMaskFactory    = $quoteIdMaskFactory;
 
 
         parent::__construct($context);
@@ -266,9 +266,14 @@ class updateCart
      */
     protected function updateShipping($quote, $method=null)
     {
+        $sveaOrder = $this->buildOrder->getOrder($quote, false);
         $this->quoteRepository->save($quote);
-
         $shippingAddress = $quote->getShippingAddress();
+
+        if (isset($sveaOrder['ShippingAddress']['PostalCode'])) {
+            $shippingAddress->setPostcode($sveaOrder['ShippingAddress']['PostalCode']);
+        }
+
         if($shippingAddress) {
             $shippingAddress->setCollectShippingRates(true)
                 ->collectShippingRates()

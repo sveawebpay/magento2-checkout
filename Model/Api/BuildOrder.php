@@ -735,7 +735,7 @@ class BuildOrder
         $shippingAddress = $quote->getShippingAddress();
 
         //Chosen shipping method.
-        if ($quote->getShippingAddress()->getShippingMethod()) {
+        if ($shippingAddress->getShippingMethod()) {
             $method = $shippingAddress->getShippingMethod();
         }
 
