@@ -12,9 +12,8 @@ run `composer require sveaekonomi/magento2-checkout && composer install` to inst
 Then run `bin/magento setup:upgrade && bin/magento setup:di:compile && bin/magento cache:flush` from your base folder 
 to install database scripts and recompile the dependency injections and clear cache.
 
-Head to _administration -> Stores -> Configuration -> Payment methods -> Svea Ekonomi Checkout_
+After that, head to administration -> Stores -> Configuration -> Payment methods -> Svea Ekonomi Checkout,
+ to configure your new payment method.
 
-
-and enable it, provide your integration authentication details and choose order-statuses to be used 
-before as well as after order acknowledgement. Save and clear cache.
-
+To upgrade run `composer update sveaekonomi/magento2-checkout --with-dependencies`.
+Then run `bin/magento setup:upgrade && bin/magento setup:di:compile && bin/magento cache:flush` from your base folder
