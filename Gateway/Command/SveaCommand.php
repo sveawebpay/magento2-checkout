@@ -319,8 +319,13 @@ class SveaCommand implements
                 $prefix = $referenceNumber . '-';
             }
             $orderItem = $item->getOrderItem();
+
             if ($orderItem->isChildrenCalculated()) {
-                $prefix .= $orderItem->getQuoteItemId() . '-';
+                if ($orderItem->getParentItem()) {
+                    $prefix .= $orderItem->getParentItem()->getQuoteItemId() . "-";
+                } else {
+                    $prefix .= $orderItem->getQuoteItemId() . '-';
+                }
             }
 
             if ($item->getDiscountAmount()) {
