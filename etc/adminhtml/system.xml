@@ -303,6 +303,21 @@
                         </label>
                         <source_model>Webbhuset\Sveacheckout\Model\Config\Source\Reference</source_model>
                     </field>
+                    <field
+                            id="prefer_simple_integration"
+                            translate="label"
+                            type="select"
+                            sortOrder="50"
+                            showInDefault="1"
+                            showInWebsite="1"
+                            showInStore="1"
+                    >
+                        <label><![CDATA[
+                        Will use deliverOrder / refundAmount instead of taking action on rows.<br/>
+                        <i>Will effectively disable partial deliveries.</i>
+                        ]]></label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
                 </group>
             </group>
         </section>

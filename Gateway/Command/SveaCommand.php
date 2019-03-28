@@ -139,16 +139,17 @@ class SveaCommand implements
      */
     public function capture($data)
     {
-        $payment      = SubjectReader::readPayment($data);
-        $order        = $payment->getPayment()->getOrder();
-        $sveaOrderId  = (int)$order->getPaymentReference();
-        $invoice      = $order->getInvoiceCollection()->getLastItem();
-        $sveaOrder    = $this->getCheckoutOrder($order);
-        $paymentItems = $invoice->getItems();
-        $locale       = $this->getLocale($order);
-
-        $shippingMethod      = '';
-        $canPartiallyProcess = in_array($this::SVEA_IS_PARTIALLY_INVOICEABLE, $sveaOrder['Actions']);
+        $payment              = SubjectReader::readPayment($data);
+        $order                = $payment->getPayment()->getOrder();
+        $sveaOrderId          = (int)$order->getPaymentReference();
+        $invoice              = $order->getInvoiceCollection()->getLastItem();
+        $sveaOrder            = $this->getCheckoutOrder($order);
+        $paymentItems         = $invoice->getItems();
+        $locale               = $this->getLocale($order);
+        $configKey            = 'payment/webbhuset_sveacheckout/developers/prefer_simple_integration';
+        $useSimpleIntegration = $this->helper->getStoreConfig($configKey);
+        $shippingMethod       = '';
+        $canPartiallyProcess  = in_array($this::SVEA_IS_PARTIALLY_INVOICEABLE, $sveaOrder['Actions']);
 
         if (!in_array($this::SVEA_IS_INVOICEABLE, $sveaOrder['Actions'])) {
             if ($this::SVEA_ORDER_DELIVERED == $sveaOrder['OrderStatus']) {
@@ -174,7 +175,8 @@ class SveaCommand implements
             ->fetchNewIncrementId($order->getStoreId());
         $invoice->setIncrementId($invoiceIncrementId);
 
-        if (!$canPartiallyProcess) {
+        if (!$canPartiallyProcess || $useSimpleIntegration) {
+
             $response  = WebPayAdmin::deliverOrderRows($this->sveaConfig)
                 ->setCheckoutOrderId($sveaOrderId)
                 ->setCountryCode($locale['purchase_country'])
@@ -539,17 +541,18 @@ class SveaCommand implements
      */
     public function refund($data)
     {
-        $payment         = SubjectReader::readPayment($data);
-        $order           = $payment->getPayment()->getOrder();
-        $creditMemo      = $order->getPayment()->getCreditmemo();
-        $invoiceNo       = $creditMemo->getInvoice()->getIncrementId();
-        $sveaOrderId     = (int)$order->getPaymentReference();
-        $sveaConfig      = $this->sveaConfig;
-        $sveaOrder       = $this->getCheckoutOrder($order);
-        $creditMemoItems = $creditMemo->getItems();
-        $shippingMethod  = '';
-        $shippingAmount  = $creditMemo->getOrder()->getShippingAmount();
-        $shippingCredit  = $creditMemo->getShippingAmount();
+        $payment              = SubjectReader::readPayment($data);
+        $order                = $payment->getPayment()->getOrder();
+        $creditMemo           = $order->getPayment()->getCreditmemo();
+        $invoiceNo            = $creditMemo->getInvoice()->getIncrementId();
+        $sveaOrderId          = (int)$order->getPaymentReference();
+        $sveaConfig           = $this->sveaConfig;
+        $sveaOrder            = $this->getCheckoutOrder($order);
+        $creditMemoItems      = $creditMemo->getItems();
+        $shippingMethod       = '';
+        $shippingAmount       = $creditMemo->getOrder()->getShippingAmount();
+        $shippingCredit       = $creditMemo->getShippingAmount();
+        $useSimpleIntegration = $this->helper->getStoreConfig('sveacheckout/prefer_simple_integration');
 
         if ($shippingCredit > 0 && ($shippingCredit == $shippingAmount)) {
             $shippingMethod = $order->getShippingDescription();

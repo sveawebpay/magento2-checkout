@@ -32,6 +32,7 @@
                 <allowed_customers>0</allowed_customers>
                 <override_terms_url>0</override_terms_url>
                 <enable_international_purchases>0</enable_international_purchases>
+                <prefer_simple_integration>0</prefer_simple_integration>
             </webbhuset_sveacheckout>
         </payment>
     </default>
