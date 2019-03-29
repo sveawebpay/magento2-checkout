@@ -10,7 +10,6 @@ use Webbhuset\Sveacheckout\Model\Api\BuildOrder;
 use Webbhuset\Sveacheckout\Model\Queue as queueModel;
 use Magento\Sales\Model\ResourceModel\Order\Collection  as  orderCollection;
 use Webbhuset\Sveacheckout\Model\Logger\Logger as Logger;
-use Magento\Framework\Encryption\EncryptorInterface;
 
 /**
  * Class Success.
@@ -30,7 +29,6 @@ class Success
     protected $quoteRepository;
     protected $orderCollection;
     protected $queue;
-    protected $cipher;
 
     /**
      * Success constructor.
@@ -41,7 +39,6 @@ class Success
      * @param \Webbhuset\Sveacheckout\Model\Api\BuildOrder     $buildOrder
      * @param \Magento\Quote\Model\QuoteRepository             $quoteRepository
      * @param \Webbhuset\Sveacheckout\Model\Logger\Logger      $logger
-     * @param \Magento\Framework\Encryption\EncryptorInterface $cipher
      */
     public function __construct(
         Context            $context,
@@ -51,8 +48,7 @@ class Success
         QuoteRepository    $quoteRepository,
         queueModel         $queueModel,
         orderCollection    $orderCollection,
-        Logger             $logger,
-        EncryptorInterface $cipher
+        Logger             $logger
     )
     {
         $this->resultPageFactory = $resultPageFactory;
@@ -63,7 +59,6 @@ class Success
         $this->queue             = $queueModel;
         $this->orderCollection   = $orderCollection;
         $this->logger            = $logger;
-        $this->cipher            = $cipher;
         parent::__construct($context);
     }
 
@@ -80,11 +75,7 @@ class Success
             ->getLayout()
             ->getBlock('webbhuset_sveacheckout_Checkout');
 
-        $rawQueueId     = $this->context->getRequest()->getParam('queueId');
-        $queueId        = $this->cipher->decrypt($rawQueueId);
-        if (!is_numeric($queueId)) {
-            $queueId        = $this->cipher->decrypt(urldecode($rawQueueId));
-        }
+        $queueId        = $this->context->getRequest()->getParam('queueId');
         $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
         $quoteId        = $orderQueueItem->getQuoteId();
 
