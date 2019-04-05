@@ -467,10 +467,10 @@ class BuildOrder
         //To avoid order already being created, if you for example have
         //stageEnv/devEnv and ProductionEnv with quote id in same range.
         $allowedLength = 32;
-        $separator     = '_';
+        $separator     = '_q_m2_';
         $lengthOfHash  = $allowedLength - (strlen((string)$quoteId) + strlen($separator));
         $hashedBaseUrl = sha1($this->helper->getBaseUrl());
-        $clientId      = $quoteId . $separator . substr($hashedBaseUrl, 0, $lengthOfHash);
+        $clientId      = $quoteId . $separator . mb_substr($hashedBaseUrl, 0, $lengthOfHash);
         $pushUri       = $this->helper->getUrl('sveacheckout/Index/push', $pushParams);
         $validationUri = $this->helper->getUrl('sveacheckout/Index/Validation', $pushParams);
 

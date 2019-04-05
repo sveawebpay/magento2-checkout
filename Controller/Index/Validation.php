@@ -251,9 +251,9 @@ class Validation
         //stageEnv/devEnv and ProductionEnv with order id in same range.
 
         $allowedLength = 32;
-        $separator     = '_';
+        $separator     = '_o_m2_';
         $lengthOfHash  = $allowedLength - (strlen((string)$reference) + strlen($separator));
-        $hashedBaseUrl = sha1($this->context->getUrl()->getBaseUrl());
+        $hashedBaseUrl = sha1($this->helper->getBaseUrl());
         $clientOrder   = $reference . $separator . mb_substr($hashedBaseUrl, 0, $lengthOfHash);
 
         return $clientOrder;
