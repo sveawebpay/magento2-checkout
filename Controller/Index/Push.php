@@ -3,6 +3,7 @@
 namespace Webbhuset\Sveacheckout\Controller\Index;
 
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\DataObject;
 use Magento\Framework\View\Result\PageFactory;
 use Webbhuset\Sveacheckout\Model\Queue as queueModel;
@@ -69,6 +70,14 @@ class Push
         $this->orderManagement    = $OrderManagementInterface;
 
         parent::__construct($context);
+
+        // Fix for Magento2.3 adding isAjax to the request params
+        if (interface_exists('\Magento\Framework\App\CsrfAwareActionInterface')) {
+            $request = $this->getRequest();
+            if ($request instanceof HttpRequest && $request->isPost()) {
+                $request->setParam('isAjax', true);
+            }
+        }
     }
 
     /**
