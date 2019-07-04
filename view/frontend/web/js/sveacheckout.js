@@ -62,6 +62,20 @@ require([
     return false;
   });
 
+  function enableAllShippingRadios() {
+    document.querySelectorAll("#co-shipping-method-form input[type='radio']").forEach(function(el){
+      if(el.disabled) {
+        console.log('removed disabled State');
+        el.disabled=false;
+        el.removeAttribute("disabled");
+      }
+    });
+  }
+  enableAllShippingRadios();
+  $('body').on('change',"input[type='radio']",function(){
+    enableAllShippingRadios();
+  });
+
   $('body').on('change',"[name='country_id']",function(){
     var formData = $('#shipping-zip-form').serializeArray();
     var postData = {};
