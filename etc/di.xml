@@ -91,4 +91,8 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Magento\Framework\View\Result\Page">
+        <plugin name="SveacheckoutResultPage" type="Webbhuset\Sveacheckout\Plugin\Result\Page"/>
+    </type>
 </config>
