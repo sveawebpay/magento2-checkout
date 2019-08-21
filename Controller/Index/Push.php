@@ -71,11 +71,12 @@ class Push
 
         parent::__construct($context);
 
-        // Fix for Magento2.3 adding isAjax to the request params
+        // Magento 2.3 post request compatibility
         if (interface_exists('\Magento\Framework\App\CsrfAwareActionInterface')) {
             $request = $this->getRequest();
             if ($request instanceof HttpRequest && $request->isPost()) {
                 $request->setParam('isAjax', true);
+                $request->getHeaders()->addHeaderLine('X_REQUESTED_WITH', 'XMLHttpRequest');
             }
         }
     }
