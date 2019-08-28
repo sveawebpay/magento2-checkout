@@ -179,6 +179,7 @@ require([
         $(blockElement).html(blockContent);
       }
     });
+    enableAllShippingRadios();
   }
 
   /**
