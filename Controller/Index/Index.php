@@ -168,8 +168,13 @@ class Index
     {
         $requestParams = $this->context->getRequest()->getParams();
 
-        if (isset($requestParams['reactivate']) && isset($requestParams['queueId'])) {
-            $queueId = (int) $requestParams['queueId'];
+        if (
+            isset($requestParams['reactivate'])
+            && (isset($requestParams['queueId']) || isset($requestParams['queueid']))
+        ) {
+            $queueId = (isset($requestParams['queueId']))
+                     ? (int)$requestParams['queueId']
+                     : (int)$requestParams['queueid'];
             $quoteId = $this->getNewestQuoteId($queueId);
 
             $this->logger->info("Reactivating queueId `{$queueId}`, quoteId `$quoteId`");

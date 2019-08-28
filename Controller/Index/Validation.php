@@ -91,7 +91,9 @@ class Validation
     public function execute()
     {
         $resultPage = $this->resultJsonFactory->create();
-        $queueId    = $this->context->getRequest()->getParam('queueId');
+        $queueId    = (!empty($this->context->getRequest()->getParam('queueId')))
+                    ? $this->context->getRequest()->getParam('queueId')
+                    : $this->context->getRequest()->getParam('queueid');
 
         $this->logger->debug("Validation, queueId `{$queueId}`");
 

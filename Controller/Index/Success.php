@@ -75,7 +75,9 @@ class Success
             ->getLayout()
             ->getBlock('webbhuset_sveacheckout_Checkout');
 
-        $queueId        = $this->context->getRequest()->getParam('queueId');
+        $queueId        = (!empty($this->context->getRequest()->getParam('queueId')))
+                        ? $this->context->getRequest()->getParam('queueId')
+                        : $this->context->getRequest()->getParam('queueid');
         $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
         $quoteId        = $orderQueueItem->getQuoteId();
 

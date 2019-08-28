@@ -91,7 +91,9 @@ class Push
     public function execute()
     {
         $resultPage = $this->_resultPageFactory->create();
-        $queueId    = $this->context->getRequest()->getParam('queueId');
+        $queueId    = (!empty($this->context->getRequest()->getParam('queueId')))
+                    ? $this->context->getRequest()->getParam('queueId')
+                    : $this->context->getRequest()->getParam('queueid');
 
         $orderQueueItem = $this->queue->getLatestQueueItemWithSameReference($queueId);
 
