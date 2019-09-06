@@ -257,6 +257,13 @@ class BuildOrder
         return $response;
     }
 
+    public function getSveaOrderByReference($reference) {
+        $builder = WebPay::checkout($this->auth);
+        $builder->setCheckoutOrderId((int)$reference);
+
+        return $builder->getOrder();
+    }
+
     /**
      * Create a new queue item.
      *

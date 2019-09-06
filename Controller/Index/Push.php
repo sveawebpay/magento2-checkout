@@ -99,8 +99,9 @@ class Push
 
         $this->logger->debug("Push, queueId `{$queueId}`, latest queueId `{$orderQueueItem->getQueueId()}`");
 
-        $quoteId        = $orderQueueItem->getQuoteId();
-        $orderId        = $orderQueueItem->getOrderId();
+        $quoteId          = $orderQueueItem->getQuoteId();
+        $orderId          = $orderQueueItem->getOrderId();
+        $paymentReference = $orderQueueItem->getData('payment_reference');
 
         if (!$quoteId) {
             $this->logger->info("Quote not found for queue ID `{$queueId}`");
@@ -116,14 +117,14 @@ class Push
             return $this->reportAndReturn(404, "QueueItem {$quoteId} not found in queue.");
         }
 
+
         try {
-            $quote = $this->quoteRepository->get($quoteId);
+            $quote = $this->quoteRepository->get($orderQueueItem->getData('quote_id'));
+            $sveaOrder = $this->svea->getOrder($quote);
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
-
-            return $this->reportAndReturn(404, "Quote {$quoteId} not found");
+            $quote     = new DataObject([]);
+            $sveaOrder = $this->getFromReference($paymentReference);
         }
-
-        $sveaOrder = $this->svea->getOrder($quote, 'push');
 
         if (!$sveaOrder) {
             return $this->reportAndReturn(
@@ -178,6 +179,12 @@ class Push
             $this->logger->info("Acknowledging queue item `{$orderQueueItem->getQueueId()}`, mode `{$mode}`");
             $this->acknowledge->acknowledge($orderQueueItem, $responseObject, $mode);
         }
+    }
+
+    protected function getFromReference($reference) {
+        $sveaOrder = $this->svea->getSveaOrderByReference($reference);
+
+        return $sveaOrder;
     }
 
     /**
