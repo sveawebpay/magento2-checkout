@@ -1,4 +1,4 @@
-# Warning! This repository is no longer being updated, please use this module instead if you're looking for a Svea Checkout module for Magento 2: [sveawebpay/nwt-magento2-checkout](https://github.com/sveawebpay/magento2-checkout/)
+# Warning! This repository is no longer being updated, please use this module instead if you're looking for a Svea Checkout module for Magento 2: [sveawebpay/nwt-magento2-checkout](https://github.com/sveawebpay/nwt-magento2-checkout/)
 
 Svea checkout for Magento2
 
